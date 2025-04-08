@@ -20,7 +20,6 @@ export default function BookingsPage() {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        // Check if user is authenticated
         const {
           data: { user },
         } = await supabase.auth.getUser()
@@ -30,7 +29,6 @@ export default function BookingsPage() {
           return
         }
 
-        // Fetch bookings from Supabase
         const { data, error } = await supabase
           .from("bookings")
           .select(`
@@ -47,7 +45,6 @@ export default function BookingsPage() {
           .order("created_at", { ascending: false })
 
         if (error) throw error
-
         setBookings(data || [])
       } catch (error: any) {
         console.error("Error fetching bookings:", error.message)
@@ -64,11 +61,14 @@ export default function BookingsPage() {
     switch (status) {
       case "confirmed":
         return "bg-green-100 text-green-800"
+      case "approved":
+        return "bg-blue-100 text-blue-800"
       case "pending":
         return "bg-yellow-100 text-yellow-800"
       case "completed":
-        return "bg-blue-100 text-blue-800"
+        return "bg-gray-100 text-gray-800"
       case "cancelled":
+      case "rejected":
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -102,7 +102,11 @@ export default function BookingsPage() {
       </div>
 
       <div className="container mx-auto py-12 px-4">
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">{error}</div>}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
+            {error}
+          </div>
+        )}
 
         {bookings.length === 0 ? (
           <div className="text-center py-12">
@@ -142,6 +146,7 @@ export default function BookingsPage() {
                         </span>
                       </div>
                     </div>
+
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 text-gray-400 mr-2" />
@@ -168,11 +173,12 @@ export default function BookingsPage() {
                         </div>
                       </div>
                     </div>
+
                     <div className="mt-4 flex justify-end space-x-2">
                       <Button variant="outline" size="sm" onClick={() => router.push(`/booking/details/${booking.id}`)}>
                         View Details
                       </Button>
-                      {booking.status === "pending" && (
+                      {booking.status === "approved" && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -195,4 +201,3 @@ export default function BookingsPage() {
     </div>
   )
 }
-

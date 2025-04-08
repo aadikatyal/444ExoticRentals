@@ -93,19 +93,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return
-
-    try {
-      const { error } = await supabase.from("profiles").update(data).eq("id", user.id)
-
-      if (error) {
-        throw error
-      }
-
-      await refreshProfile()
-    } catch (error) {
+  
+    console.log("Updating with data:", data)
+  
+    const { error } = await supabase
+      .from("profiles")
+      .update(data)
+      .eq("id", user.id)
+  
+    if (error) {
       console.error("Error updating profile:", error)
       throw error
     }
+  
+    await refreshProfile()
   }
 
   const signOut = async () => {

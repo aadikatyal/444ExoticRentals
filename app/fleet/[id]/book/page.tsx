@@ -332,8 +332,12 @@ export default function BookingPage() {
                       required
                     >
                       <option value="">Select a location</option>
-                      <option value="Miami">Miami</option>
-                      <option value="Atlanta">Atlanta</option>
+                      {Array.isArray(car.location) &&
+                        car.location.map((loc) => (
+                          <option key={loc} value={loc}>
+                            {loc}
+                          </option>
+                        ))}
                     </select>
                   </div>
 

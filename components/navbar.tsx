@@ -2,17 +2,19 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { User, Menu, LogOut } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { cn } from "@/lib/utils"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
   const supabase = createClient()
 
   useEffect(() => {
@@ -41,6 +43,15 @@ export function Navbar() {
     router.refresh()
   }
 
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/fleet", label: "Our Fleet" },
+    { href: "/add-listing", label: "List Your Car" },
+    { href: "/locations", label: "Locations" },
+    { href: "/about", label: "About" },
+    { href: "/contact", label: "Contact" },
+  ]
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -51,24 +62,20 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-700">
-          <Link href="/" className="hover:text-red-600 transition-colors">
-            Home
-          </Link>
-          <Link href="/fleet" className="hover:text-red-600 transition-colors">
-            Our Fleet
-          </Link>
-          <Link href="/add-listing" className="hover:text-red-600 transition-colors">
-            List Your Car
-          </Link>
-          <Link href="/locations" className="hover:text-red-600 transition-colors">
-            Locations
-          </Link>
-          <Link href="/about" className="hover:text-red-600 transition-colors">
-            About
-          </Link>
-          <Link href="/contact" className="hover:text-red-600 transition-colors">
-            Contact
-          </Link>
+          {navLinks.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "transition-colors px-2 py-1 rounded-md",
+                pathname === href
+                  ? "bg-red-100 text-red-600"
+                  : "hover:text-red-600"
+              )}
+            >
+              {label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-4">
@@ -109,48 +116,20 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="right" className="bg-white text-gray-700">
               <div className="flex flex-col space-y-6 mt-8">
-                <Link
-                  href="/"
-                  className="text-lg font-medium hover:text-red-600 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/fleet"
-                  className="text-lg font-medium hover:text-red-600 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Our Fleet
-                </Link>
-                <Link
-                  href="/add-listing"
-                  className="text-lg font-medium hover:text-red-600 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  List Your Car
-                </Link>
-                <Link
-                  href="/locations"
-                  className="text-lg font-medium hover:text-red-600 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Locations
-                </Link>
-                <Link
-                  href="/about"
-                  className="text-lg font-medium hover:text-red-600 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  About
-                </Link>
-                <Link
-                  href="/contact"
-                  className="text-lg font-medium hover:text-red-600 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Contact
-                </Link>
+                {navLinks.map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      "text-lg font-medium transition-colors",
+                      pathname === href ? "text-red-600" : "hover:text-red-600"
+                    )}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {label}
+                  </Link>
+                ))}
+
                 <div className="pt-4 border-t border-gray-200">
                   {user ? (
                     <>
@@ -192,4 +171,3 @@ export function Navbar() {
     </header>
   )
 }
-

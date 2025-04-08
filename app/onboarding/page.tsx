@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUser } from "@/contexts/user-context"
@@ -10,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageLayout } from "@/components/page-layout"
+import { createClient } from "@/lib/supabase/client"
 
 export default function OnboardingPage() {
   const { user, profile, isLoading, updateProfile } = useUser()
@@ -18,65 +17,114 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
-    phone: "",
+    phone_number: "",
     address: "",
     city: "",
     state: "",
     zip: "",
-    drivers_license: "",
+    license_file: null,
+    registration_file: null,
+    insurance_file: null,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
 
   useEffect(() => {
+    const supabase = createClient()
+
+    const ensureProfileExists = async () => {
+      if (!user) return
+      const { data } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle()
+      if (!data) {
+        await supabase.from("profiles").insert({
+          id: user.id,
+          email: user.email,
+          onboarded: false,
+        })
+      }
+    }
+
     if (!isLoading) {
       if (!user) {
         router.push("/login?redirect=/onboarding")
         return
       }
 
+      ensureProfileExists()
+
       if (profile?.onboarded) {
         router.push("/account")
         return
       }
 
-      // Pre-fill form with existing profile data if available
       if (profile) {
-        setFormData({
+        setFormData((prev) => ({
+          ...prev,
           first_name: profile.first_name || "",
           last_name: profile.last_name || "",
-          phone: profile.phone || "",
+          phone_number: profile.phone_number || "",
           address: profile.address || "",
           city: profile.city || "",
           state: profile.state || "",
           zip: profile.zip || "",
-          drivers_license: profile.drivers_license || "",
-        })
+          license_file: prev.license_file,
+          registration_file: prev.registration_file,
+          insurance_file: prev.insurance_file,
+        }))
       }
     }
   }, [isLoading, user, profile, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value, files } = e.target
+    if (files) {
+      setFormData((prev) => ({ ...prev, [name]: files[0] }))
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }))
+    }
   }
 
-  const nextStep = () => {
-    setStep((prev) => prev + 1)
-  }
-
-  const prevStep = () => {
-    setStep((prev) => prev - 1)
-  }
+  const nextStep = () => setStep((prev) => prev + 1)
+  const prevStep = () => setStep((prev) => prev - 1)
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("IN SUBMIT")
     e.preventDefault()
     setIsSubmitting(true)
     setError("")
 
+    const supabase = createClient()
+
     try {
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user!.id)
+        .maybeSingle()
+
+      if (!existingProfile) {
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({ id: user!.id, email: user!.email })
+
+        if (insertError) throw insertError
+      }
+
+      const uploads: any = {}
+      const uploadFile = async (file: File, key: string) => {
+        const filePath = `${user!.id}/${Date.now()}-${key}`
+        const { error } = await supabase.storage.from("user-documents").upload(filePath, file)
+        if (error) throw error
+        uploads[`${key}_file`] = filePath
+      }
+
+      if (formData.license_file) await uploadFile(formData.license_file, "license")
+      if (formData.registration_file) await uploadFile(formData.registration_file, "registration")
+      if (formData.insurance_file) await uploadFile(formData.insurance_file, "insurance")
+
       await updateProfile({
         ...formData,
+        ...uploads,
         onboarded: true,
       })
 
@@ -88,13 +136,68 @@ export default function OnboardingPage() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <PageLayout hideFooter>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+  const renderStep = () => {
+    if (step === 1) {
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="first_name">First Name</Label>
+              <Input id="first_name" name="first_name" value={formData.first_name} onChange={handleChange} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="last_name">Last Name</Label>
+              <Input id="last_name" name="last_name" value={formData.last_name} onChange={handleChange} required />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone_number">Phone Number</Label>
+            <Input id="phone_number" name="phone_number" type="tel" value={formData.phone_number} onChange={handleChange} required />
+          </div>
         </div>
-      </PageLayout>
+      )
+    }
+
+    if (step === 2) {
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="address">Street Address</Label>
+            <Input id="address" name="address" value={formData.address} onChange={handleChange} required />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              <Input id="city" name="city" value={formData.city} onChange={handleChange} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="state">State</Label>
+              <Input id="state" name="state" value={formData.state} onChange={handleChange} required />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="zip">ZIP Code</Label>
+            <Input id="zip" name="zip" value={formData.zip} onChange={handleChange} required />
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="license_file">Upload Driver's License</Label>
+          <Input id="license_file" name="license_file" type="file" accept="image/*,application/pdf" onChange={handleChange} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="registration_file">Upload Registration</Label>
+          <Input id="registration_file" name="registration_file" type="file" accept="image/*,application/pdf" onChange={handleChange} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="insurance_file">Upload Proof of Insurance</Label>
+          <Input id="insurance_file" name="insurance_file" type="file" accept="image/*,application/pdf" onChange={handleChange} required />
+        </div>
+      </div>
     )
   }
 
@@ -105,102 +208,47 @@ export default function OnboardingPage() {
           <CardHeader>
             <CardTitle>Complete Your Profile</CardTitle>
             <CardDescription>
-              {step === 1 ? "Let's get to know you better" : "Please provide your address information"}
+              {step === 1
+                ? "Let's get to know you better"
+                : step === 2
+                ? "Please provide your address"
+                : "Upload your documents"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">{error}</div>
-            )}
 
+          <CardContent asChild>
             <form onSubmit={handleSubmit}>
-              {step === 1 ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="first_name">First Name</Label>
-                      <Input
-                        id="first_name"
-                        name="first_name"
-                        value={formData.first_name}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="last_name">Last Name</Label>
-                      <Input
-                        id="last_name"
-                        name="last_name"
-                        value={formData.last_name}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="drivers_license">Driver's License Number</Label>
-                    <Input
-                      id="drivers_license"
-                      name="drivers_license"
-                      value={formData.drivers_license}
-                      onChange={handleChange}
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Required for verification purposes. We prioritize your privacy and security.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Street Address</Label>
-                    <Input id="address" name="address" value={formData.address} onChange={handleChange} required />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input id="city" name="city" value={formData.city} onChange={handleChange} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State</Label>
-                      <Input id="state" name="state" value={formData.state} onChange={handleChange} required />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="zip">ZIP Code</Label>
-                    <Input id="zip" name="zip" value={formData.zip} onChange={handleChange} required />
-                  </div>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+                  {error}
                 </div>
               )}
+
+              {renderStep()}
+
+              <div className="flex justify-between mt-6">
+                {step > 1 ? (
+                  <Button variant="outline" type="button" onClick={prevStep} disabled={isSubmitting}>
+                    Back
+                  </Button>
+                ) : (
+                  <div />
+                )}
+
+                {step < 3 ? (
+                  <Button className="bg-red-600 hover:bg-red-700 text-white" type="button" onClick={nextStep}>
+                    Continue
+                  </Button>
+                ) : (
+                  <Button className="bg-red-600 hover:bg-red-700 text-white" type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Saving..." : "Complete Setup"}
+                  </Button>
+                )}
+              </div>
             </form>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            {step === 1 ? (
-              <div></div>
-            ) : (
-              <Button variant="outline" onClick={prevStep} disabled={isSubmitting}>
-                Back
-              </Button>
-            )}
-            {step === 1 ? (
-              <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={nextStep}>
-                Continue
-              </Button>
-            ) : (
-              <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleSubmit} disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Complete Setup"}
-              </Button>
-            )}
-          </CardFooter>
         </Card>
       </div>
     </PageLayout>
   )
 }
-

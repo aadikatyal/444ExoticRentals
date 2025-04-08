@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const redirect = requestUrl.searchParams.get("redirect") || "/account"
 
   if (code) {
-    const cookieStore = await cookies() // ✅ await here
+    const cookieStore = await cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
     // 1. Exchange code for session
@@ -29,15 +29,19 @@ export async function GET(request: NextRequest) {
         .from("profiles")
         .select("id, is_admin")
         .eq("id", session.user.id)
-        .single()
+        .maybeSingle()
 
-      // 3. If not, create it
+      // 3. If not, create it and redirect to onboarding
       if (!profile) {
-        await supabase.from("profiles").insert({
+        const { error: insertError } = await supabase.from("profiles").insert({
           id: session.user.id,
           email: session.user.email,
           onboarded: false,
         })
+
+        if (insertError) {
+          console.error("Insert error:", insertError.message)
+        }
 
         return NextResponse.redirect(new URL("/onboarding", requestUrl.origin))
       }

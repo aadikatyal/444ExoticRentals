@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import AdminPageWrapper from "@/components/admin-page-wrapper"
+import Link from "next/link"
 
 export default function AdminTransactionsPage() {
   const [transactions, setTransactions] = useState<any[]>([])
@@ -12,7 +13,7 @@ export default function AdminTransactionsPage() {
       const supabase = createClient()
       const { data, error } = await supabase
         .from("bookings")
-        .select("id, total_price, created_at, status, profiles(email), cars(name)")
+        .select("id, total_price, created_at, status, profiles(id, email), cars(name)")
         .order("created_at", { ascending: false })
 
       if (error) {
@@ -45,8 +46,19 @@ export default function AdminTransactionsPage() {
             <tbody>
               {transactions.map((t) => (
                 <tr key={t.id} className="border-t">
-                  <td className="px-4 py-2">{t.id}</td>
-                  <td className="px-4 py-2">{t.profiles?.email || "N/A"}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-gray-700">{t.id}</td>
+                  <td className="px-4 py-2">
+                    {t.profiles?.email ? (
+                      <Link
+                        href={`/admin/users?highlight=${t.profiles.id}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {t.profiles.email}
+                      </Link>
+                    ) : (
+                      "N/A"
+                    )}
+                  </td>
                   <td className="px-4 py-2">{t.cars?.name || "N/A"}</td>
                   <td className="px-4 py-2">${t.total_price}</td>
                   <td className="px-4 py-2 capitalize">{t.status}</td>

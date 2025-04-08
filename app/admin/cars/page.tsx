@@ -1,3 +1,5 @@
+// app/admin/cars/page.tsx
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -5,22 +7,24 @@ import { createClient } from "@/lib/supabase/client"
 import AdminPageWrapper from "@/components/admin-page-wrapper"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 export default function AdminCarsPage() {
   const [cars, setCars] = useState<any[]>([])
+  const router = useRouter()
 
   useEffect(() => {
     const fetchCars = async () => {
       const supabase = createClient()
       const { data, error } = await supabase
         .from("cars")
-        .select("*") // temporarily removed .order("created_at")
+        .select("*")
+
       if (error) {
         console.error("Error fetching cars:", error)
         return
       }
 
-      console.log("Fetched cars:", data)
       setCars(data)
     }
 
@@ -28,8 +32,8 @@ export default function AdminCarsPage() {
   }, [])
 
   const handleDelete = async (id: string) => {
-    const confirm = window.confirm("Are you sure you want to delete this car?")
-    if (!confirm) return
+    const confirmDelete = window.confirm("Are you sure you want to delete this car?")
+    if (!confirmDelete) return
 
     const supabase = createClient()
     const { error } = await supabase.from("cars").delete().eq("id", id)
@@ -43,7 +47,7 @@ export default function AdminCarsPage() {
 
   return (
     <AdminPageWrapper>
-      <div className="p-6">
+      <div className="p-6 pb-20">
         <h1 className="text-2xl font-bold mb-6">Fleet Management</h1>
 
         <div className="overflow-x-auto border rounded-lg">
@@ -85,9 +89,11 @@ export default function AdminCarsPage() {
                     <td className="px-4 py-2">{car.year || "—"}</td>
                     <td className="px-4 py-2">${car.price_per_day || "—"}</td>
                     <td className="px-4 py-2 capitalize">{car.location || "—"}</td>
-                    <td className="px-4 py-2 capitalize">{car.status || "available"}</td>
+                    <td className="px-4 py-2 capitalize">
+                      {car.available ? "Available" : "Unavailable"}
+                    </td>
                     <td className="px-4 py-2 space-x-2">
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => router.push(`/admin/cars/${car.id}/edit`)}>
                         Edit
                       </Button>
                       <Button size="sm" variant="destructive" onClick={() => handleDelete(car.id)}>
@@ -102,9 +108,7 @@ export default function AdminCarsPage() {
         </div>
 
         <div className="mt-6">
-          <Button asChild className="bg-amber-400 hover:bg-amber-500 text-black">
-            <a href="/add-listing">Add New Car</a>
-          </Button>
+          <Button className="bg-amber-400 hover:bg-amber-500 text-black" onClick={() => router.push("/admin/cars/new")}>Add New Car</Button>
         </div>
       </div>
     </AdminPageWrapper>

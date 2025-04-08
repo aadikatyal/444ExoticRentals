@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
       const { error } = await supabase
         .from("bookings")
-        .update({ status: "completed" })
+        .update({ status: "confirmed", paid: true })
         .eq("id", bookingId)
 
       if (error) {

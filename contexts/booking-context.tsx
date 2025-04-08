@@ -43,10 +43,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
 
-      if (error) {
-        throw error
-      }
-
+      if (error) throw error
       setBookings(data || [])
     } catch (error) {
       console.error("Error fetching bookings:", error)
@@ -55,10 +52,30 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const createBookingRequest = async (carId: string, startDate: string, endDate: string, location: string, totalPrice: number) => {
+  const createBookingRequest = async (
+    carId: string,
+    startDate: string,
+    endDate: string,
+    location: string,
+    totalPrice: number
+  ) => {
     if (!user) throw new Error("User must be logged in to create a booking")
 
     try {
+      // Check for duplicate booking
+      const { data: existing, error: checkError } = await supabase
+        .from("bookings")
+        .select("id")
+        .eq("car_id", carId)
+        .eq("user_id", user.id)
+        .eq("start_date", startDate)
+        .eq("end_date", endDate)
+
+      if (checkError) throw checkError
+      if (existing.length > 0) {
+        throw new Error("You already have a booking for this car and date range.")
+      }
+
       const { data, error } = await supabase
         .from("bookings")
         .insert({
@@ -73,9 +90,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
         .select()
         .single()
 
-      if (error) {
-        throw error
-      }
+      if (error) throw error
 
       await refreshBookings()
       return data
@@ -93,10 +108,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
         .eq("id", bookingId)
         .eq("user_id", user?.id)
 
-      if (error) {
-        throw error
-      }
-
+      if (error) throw error
       await refreshBookings()
     } catch (error) {
       console.error("Error cancelling booking:", error)
@@ -126,4 +138,3 @@ export function useBookings() {
   }
   return context
 }
-

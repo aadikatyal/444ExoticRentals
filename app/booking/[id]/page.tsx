@@ -94,9 +94,9 @@ export default function BookingConfirmationPage() {
 
       <div className="flex-1 flex flex-col justify-center items-center container mx-auto px-4 pt-12 pb-16">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-2">Booking Confirmed</h1>
+          <h1 className="text-4xl font-bold mb-2">Booking Requested</h1>
           <p className="text-gray-600">
-            Thank you for booking the <strong>{car.name}</strong> from{" "}
+            Thank you for requesting the <strong>{car.name}</strong> from{" "}
             <strong>{booking.start_date}</strong> to <strong>{booking.end_date}</strong>.
           </p>
         </div>
