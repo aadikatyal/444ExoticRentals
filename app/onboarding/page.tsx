@@ -44,18 +44,8 @@ export default function OnboardingPage() {
       }
     }
 
-    if (!isLoading) {
-      if (!user) {
-        router.push("/login?redirect=/onboarding")
-        return
-      }
-
+    if (!isLoading && user) {
       ensureProfileExists()
-
-      if (profile?.onboarded) {
-        router.push("/account")
-        return
-      }
 
       if (profile) {
         setFormData((prev) => ({
@@ -73,7 +63,7 @@ export default function OnboardingPage() {
         }))
       }
     }
-  }, [isLoading, user, profile, router])
+  }, [isLoading, user, profile])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target
@@ -125,7 +115,7 @@ export default function OnboardingPage() {
         onboarded: true,
       })
 
-      // Fetch latest profile to confirm onboarding status
+      // Manually re-check updated value before routing
       const { data: updatedProfile } = await supabase
         .from("profiles")
         .select("onboarded")
