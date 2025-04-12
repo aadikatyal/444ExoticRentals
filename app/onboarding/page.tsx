@@ -46,7 +46,7 @@ export default function OnboardingPage() {
 
     if (!isLoading) {
       if (!user) {
-        router.push("/login?redirect=/onboarding")
+        router.push("/login?redirect=/onboarding") 
         return
       }
 
