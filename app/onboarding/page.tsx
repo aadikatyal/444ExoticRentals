@@ -88,7 +88,6 @@ export default function OnboardingPage() {
   const prevStep = () => setStep((prev) => prev - 1)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("IN SUBMIT")
     e.preventDefault()
     setIsSubmitting(true)
     setError("")
@@ -143,16 +142,16 @@ export default function OnboardingPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="first_name">First Name</Label>
-              <Input id="first_name" name="first_name" value={formData.first_name} onChange={handleChange} required />
+              <Input id="first_name" name="first_name" value={formData.first_name || ""} onChange={handleChange} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="last_name">Last Name</Label>
-              <Input id="last_name" name="last_name" value={formData.last_name} onChange={handleChange} required />
+              <Input id="last_name" name="last_name" value={formData.last_name || ""} onChange={handleChange} required />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone_number">Phone Number</Label>
-            <Input id="phone_number" name="phone_number" type="tel" value={formData.phone_number} onChange={handleChange} required />
+            <Input id="phone_number" name="phone_number" type="tel" value={formData.phone_number || ""} onChange={handleChange} required />
           </div>
         </div>
       )
@@ -163,21 +162,21 @@ export default function OnboardingPage() {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="address">Street Address</Label>
-            <Input id="address" name="address" value={formData.address} onChange={handleChange} required />
+            <Input id="address" name="address" value={formData.address || ""} onChange={handleChange} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
-              <Input id="city" name="city" value={formData.city} onChange={handleChange} required />
+              <Input id="city" name="city" value={formData.city || ""} onChange={handleChange} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Input id="state" name="state" value={formData.state} onChange={handleChange} required />
+              <Input id="state" name="state" value={formData.state || ""} onChange={handleChange} required />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="zip">ZIP Code</Label>
-            <Input id="zip" name="zip" value={formData.zip} onChange={handleChange} required />
+            <Input id="zip" name="zip" value={formData.zip || ""} onChange={handleChange} required />
           </div>
         </div>
       )
@@ -216,7 +215,7 @@ export default function OnboardingPage() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent asChild>
+          <CardContent>
             <form onSubmit={handleSubmit}>
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
