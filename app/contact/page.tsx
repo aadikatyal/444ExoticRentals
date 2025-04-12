@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import { PageLayout } from "@/components/page-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -6,6 +9,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MapPin, Phone, Mail, Clock } from "lucide-react"
 
 export default function ContactPage() {
+  const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" })
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.id]: e.target.value })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    })
+
+    if (res.ok) {
+      alert("Message sent successfully!")
+      setForm({ name: "", email: "", phone: "", subject: "", message: "" })
+    } else {
+      alert("Failed to send message.")
+    }
+
+    setSubmitting(false)
+  }
+
   return (
     <PageLayout>
       <div className="container mx-auto py-12 px-4">
@@ -22,46 +52,42 @@ export default function ContactPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label htmlFor="name" className="text-sm font-medium">
-                        Full Name
-                      </label>
-                      <Input id="name" placeholder="John Doe" required />
+                      <label htmlFor="name" className="text-sm font-medium">Full Name</label>
+                      <Input id="name" required value={form.name} onChange={handleChange} />
                     </div>
                     <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium">
-                        Email Address
-                      </label>
-                      <Input id="email" type="email" placeholder="john@example.com" required />
+                      <label htmlFor="email" className="text-sm font-medium">Email Address</label>
+                      <Input id="email" type="email" required value={form.email} onChange={handleChange} />
                     </div>
                   </div>
+
                   <div className="space-y-2">
-                    <label htmlFor="subject" className="text-sm font-medium">
-                      Subject
-                    </label>
-                    <Input id="subject" placeholder="How can we help you?" required />
+                    <label htmlFor="phone" className="text-sm font-medium">Phone Number</label>
+                    <Input id="phone" value={form.phone} onChange={handleChange} />
                   </div>
+
                   <div className="space-y-2">
-                    <label htmlFor="message" className="text-sm font-medium">
-                      Message
-                    </label>
-                    <Textarea
-                      id="message"
-                      placeholder="Please provide details about your inquiry..."
-                      rows={6}
-                      required
-                    />
+                    <label htmlFor="subject" className="text-sm font-medium">Subject</label>
+                    <Input id="subject" required value={form.subject} onChange={handleChange} />
                   </div>
-                  <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white">
-                    Send Message
+
+                  <div className="space-y-2">
+                    <label htmlFor="message" className="text-sm font-medium">Message</label>
+                    <Textarea id="message" rows={6} required value={form.message} onChange={handleChange} />
+                  </div>
+
+                  <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white" disabled={submitting}>
+                    {submitting ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
               </CardContent>
             </Card>
           </div>
 
+          {/* Contact Info + Emergency Support */}
           <div>
             <Card>
               <CardHeader>
@@ -74,10 +100,8 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium">Our Location</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      123 Luxury Lane
-                      <br />
-                      Miami, FL 33101
-                      <br />
+                      123 Luxury Lane<br />
+                      Miami, FL 33101<br />
                       United States
                     </p>
                   </div>
@@ -87,9 +111,8 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium">Phone Number</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      <a href="tel:+4708806265" className="hover:text-red-600">
-                        +1 (470) 806-6265
-                        4708806265
+                      <a href="tel:+14708806265" className="hover:text-red-600">
+                        +1 (470) 880-6265
                       </a>
                     </p>
                   </div>
@@ -126,8 +149,7 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 mb-4">
-                  If you're a current customer experiencing an emergency with your rental, please call our 24/7 support
-                  line:
+                  If you're a current customer experiencing an emergency with your rental, please call our 24/7 support line:
                 </p>
                 <a
                   href="tel:+14708806265"
@@ -144,4 +166,3 @@ export default function ContactPage() {
     </PageLayout>
   )
 }
-

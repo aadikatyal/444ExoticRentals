@@ -48,7 +48,7 @@ export default function FleetPage() {
         <p className="text-lg text-gray-600 max-w-2xl mb-10">
           Experience the thrill of driving the world's most prestigious vehicles in Miami and Atlanta
         </p>
-ff
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
