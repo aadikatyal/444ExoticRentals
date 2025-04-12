@@ -125,11 +125,19 @@ export default function OnboardingPage() {
         onboarded: true,
       })
 
-      // Wait for Supabase update to settle and refresh router
-      setTimeout(() => {
+      // Fetch latest profile to confirm onboarding status
+      const { data: updatedProfile } = await supabase
+        .from("profiles")
+        .select("onboarded")
+        .eq("id", user!.id)
+        .maybeSingle()
+
+      if (updatedProfile?.onboarded) {
         router.refresh()
         router.push("/account")
-      }, 300) // 300ms delay for consistency across deploys
+      } else {
+        setError("Profile was saved but onboarding state is not reflected yet. Please try again.")
+      }
     } catch (error: any) {
       setError(error.message || "An error occurred while saving your profile")
     } finally {
