@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // make sure this is in .env.local
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 export async function POST(req: NextRequest) {
@@ -23,22 +23,31 @@ export async function POST(req: NextRequest) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
+    console.log("🔔 Stripe webhook received:", event.type)
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session
       const bookingId = session.metadata?.bookingId
 
       console.log("✅ Checkout session complete for booking:", bookingId)
+      console.log("🔍 Full session metadata:", session.metadata)
+
+      if (!bookingId) {
+        console.error("❌ No bookingId found in session metadata.")
+        return NextResponse.json({ error: "Missing bookingId" }, { status: 400 })
+      }
 
       const { error } = await supabase
         .from("bookings")
-        .update({ status: "confirmed", paid: true })
+        .update({ status: "confirmed" })
         .eq("id", bookingId)
 
       if (error) {
-        console.error("❌ Failed to update booking:", error)
+        console.error("❌ Supabase update error:", error)
         return NextResponse.json({ error: "Supabase update error" }, { status: 500 })
       }
+
+      console.log("✅ Supabase booking updated successfully")
     }
 
     return new NextResponse("Webhook received", { status: 200 })

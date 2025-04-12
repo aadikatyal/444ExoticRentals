@@ -48,7 +48,7 @@ export default function AccountPage() {
 
       setPendingBookings(bookings.filter((b) => b.status === "pending"))
       setApprovedBookings(bookings.filter((b) => b.status === "approved"))
-      setRentalHistory(bookings.filter((b) => b.status === "completed"))
+      setRentalHistory(bookings.filter((b) => b.status === "confirmed"))
 
       const { data: listings } = await supabase
         .from("car_listings")
@@ -102,7 +102,7 @@ export default function AccountPage() {
 
   const getStatusLabel = (start: string, end: string) => {
     const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()) // Strips time
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   
     const startDate = new Date(start)
     const startDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
@@ -112,7 +112,7 @@ export default function AccountPage() {
   
     if (today < startDay) return ["Upcoming", "bg-blue-100 text-blue-800"]
     if (today >= startDay && today <= endDay) return ["In Progress", "bg-yellow-100 text-yellow-800"]
-    return ["Completed", "bg-gray-200 text-gray-800"]
+    return ["Confirmed", "bg-gray-200 text-gray-800"]
   }
 
   const handlePay = async (booking) => {
@@ -153,7 +153,7 @@ export default function AccountPage() {
 
   const renderBookings = (bookings, defaultLabel, defaultBadgeClass, showPay = false) =>
     bookings.map((rental) => {
-      const [label, badgeClass] = defaultLabel === "Completed"
+      const [label, badgeClass] = defaultLabel === "Confirmed"
         ? getStatusLabel(rental.start_date, rental.end_date)
         : [defaultLabel, defaultBadgeClass]
 
@@ -299,7 +299,7 @@ export default function AccountPage() {
             {activeTab === "history" && (
               <>
                 <h2 className="text-2xl font-bold">Rental History</h2>
-                {rentalHistory.length ? renderBookings(rentalHistory, "Completed", "bg-gray-200 text-gray-800") : (
+                {rentalHistory.length ? renderBookings(rentalHistory, "Confirmed", "bg-gray-200 text-gray-800") : (
                   <div className="text-gray-500 italic">No rental history available.</div>
                 )}
               </>

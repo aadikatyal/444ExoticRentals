@@ -14,7 +14,7 @@ import { useCars } from "@/contexts/car-context"
 import CarCard from "@/components/car-card"
 import { CarDetailModal } from "@/components/car-detail-modal"
 
-export default function FleetPage() {
+export default function PhotoshootsPage() {
   const [filtersOpen, setFiltersOpen] = useState(true)
   const { filteredCars, isLoading, filters, setFilters } = useCars()
   const searchParams = useSearchParams()
@@ -43,12 +43,11 @@ export default function FleetPage() {
   return (
     <PageLayout>
       <div className="container mx-auto py-12 px-4">
-        <h1 className="text-3xl font-bold mb-2">Our Exotic Car Fleet</h1>
-        
+        <h1 className="text-3xl font-bold mb-2">Book a Photoshoot</h1>
         <p className="text-lg text-gray-600 max-w-2xl mb-10">
-          Experience the thrill of driving the world's most prestigious vehicles in Miami and Atlanta
+          Choose from our exotic car fleet to reserve the perfect vehicle for your shoot.
         </p>
-ff
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -95,16 +94,16 @@ ff
 
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <Label>Price Range (per day)</Label>
+                        <Label>Price Range (per hour)</Label>
                         <span className="text-sm text-gray-500">
                           ${filters.priceRange[0]} - ${filters.priceRange[1]}
                         </span>
                       </div>
                       <Slider
                         value={filters.priceRange}
-                        max={3000}
-                        min={500}
-                        step={100}
+                        max={1000}
+                        min={100}
+                        step={50}
                         className="mt-2"
                         onValueChange={(value) => setFilters({ priceRange: value as [number, number] })}
                       />
@@ -190,7 +189,7 @@ ff
                     setFilters({
                       location: "all",
                       vehicleType: "all",
-                      priceRange: [500, 2000],
+                      priceRange: [100, 1000],
                       make: {},
                       features: {},
                     })
@@ -202,7 +201,7 @@ ff
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredCars.map((car) => (
-                  <CarCard key={car.id} car={car} />
+                  <CarCard key={car.id} car={car} variant="photoshoot" />
                 ))}
               </div>
             )}

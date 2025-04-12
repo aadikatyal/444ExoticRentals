@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { PageLayout } from "@/components/page-layout"
@@ -22,8 +21,14 @@ export default function BookingPage() {
   const searchParams = useSearchParams()
   const { user, profile } = useUser()
   const { createBookingRequest } = useBookings()
+  const { cars } = useCars()
+
   const [car, setCar] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+
+  const [bookingType, setBookingType] = useState<"rental" | "photoshoot">("rental")
+  const [hours, setHours] = useState(1)
+  const [photoshootDate, setPhotoshootDate] = useState("")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
   const [totalDays, setTotalDays] = useState(1)
@@ -31,17 +36,14 @@ export default function BookingPage() {
   const [pickupLocation, setPickupLocation] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState("")
-  const { cars } = useCars()
 
   useEffect(() => {
-    // Get dates from URL if available
     const urlStartDate = searchParams.get("startDate")
     const urlEndDate = searchParams.get("endDate")
 
     if (urlStartDate) {
       setStartDate(urlStartDate)
     } else {
-      // Set default start date to tomorrow
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       setStartDate(tomorrow.toISOString().split("T")[0])
@@ -50,7 +52,6 @@ export default function BookingPage() {
     if (urlEndDate) {
       setEndDate(urlEndDate)
     } else {
-      // Set default end date to 3 days from now
       const threedays = new Date()
       threedays.setDate(threedays.getDate() + 3)
       setEndDate(threedays.toISOString().split("T")[0])
@@ -60,13 +61,10 @@ export default function BookingPage() {
   useEffect(() => {
     const fetchCar = async () => {
       try {
-        // Find car in context or fetch from API
         const foundCar = cars.find((c) => c.id === params.id)
-
         if (foundCar) {
           setCar(foundCar)
         } else {
-          // Fetch from API if not in context
           const response = await fetch(`/api/cars/${params.id}`)
           if (!response.ok) throw new Error("Car not found")
           const data = await response.json()
@@ -85,16 +83,18 @@ export default function BookingPage() {
   }, [params.id, cars])
 
   useEffect(() => {
-    if (startDate && endDate && car) {
+    if (!car) return
+    if (bookingType === "rental" && startDate && endDate) {
       const start = new Date(startDate)
       const end = new Date(endDate)
       const diffTime = Math.abs(end.getTime() - start.getTime())
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
       setTotalDays(diffDays || 1)
       setTotalPrice(diffDays * car.price_per_day || car.price_per_day)
+    } else if (bookingType === "photoshoot") {
+      setTotalPrice(hours * (car.price_per_hour || 250))
     }
-  }, [startDate, endDate, car])
+  }, [bookingType, startDate, endDate, hours, car])
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -107,19 +107,25 @@ export default function BookingPage() {
         return
       }
 
-      if (!startDate || !endDate) {
-        throw new Error("Please select start and end dates")
+      if (bookingType === "rental" && (!startDate || !endDate || new Date(startDate) > new Date(endDate))) {
+        throw new Error("Please select valid start and end dates")
       }
 
-      if (new Date(startDate) > new Date(endDate)) {
-        throw new Error("End date must be after start date")
+      if (bookingType === "photoshoot") {
+        if (!photoshootDate) throw new Error("Please select a date for the photoshoot")
+        if (hours <= 0) throw new Error("Please enter a valid number of hours")
       }
 
-      // Create booking request
+      const booking = await createBookingRequest(
+        car.id,
+        bookingType === "rental" ? startDate : photoshootDate,
+        bookingType === "rental" ? endDate : photoshootDate,
+        pickupLocation,
+        totalPrice,
+        bookingType,
+        bookingType === "photoshoot" ? hours : null
+      )
 
-      const booking = await createBookingRequest(car.id, startDate, endDate, pickupLocation, totalPrice)
-
-      // Redirect to confirmation page
       router.push(`/booking/confirmation?booking_id=${booking.id}`)
     } catch (error: any) {
       setError(error.message || "An error occurred while creating your booking")
@@ -186,8 +192,10 @@ export default function BookingPage() {
                     </div>
                   </div>
                   <div className="mt-4 md:mt-0">
-                    <span className="text-2xl font-bold text-red-600">${car.price_per_day}</span>
-                    <span className="text-gray-600"> / day</span>
+                    <span className="text-2xl font-bold text-red-600">
+                      ${bookingType === "rental" ? car.price_per_day : car.price_per_hour || 250}
+                    </span>
+                    <span className="text-gray-600"> / {bookingType === "rental" ? "day" : "hour"}</span>
                   </div>
                 </div>
 
@@ -223,58 +231,11 @@ export default function BookingPage() {
                 <CardDescription>Please ensure you meet all requirements before booking</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <div className="bg-red-100 rounded-full p-2 mr-3">
-                      <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                        ></path>
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Valid Driver's License</h4>
-                      <p className="text-sm text-gray-600">
-                        Must be at least 25 years old with a valid driver's license
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="bg-red-100 rounded-full p-2 mr-3">
-                      <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                        ></path>
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Credit Card</h4>
-                      <p className="text-sm text-gray-600">A major credit card in the renter's name is required</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="bg-red-100 rounded-full p-2 mr-3">
-                      <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        ></path>
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Proof of Insurance</h4>
-                      <p className="text-sm text-gray-600">Valid insurance coverage is required</p>
-                    </div>
-                  </div>
-                </div>
+                <ul className="space-y-4">
+                  <li>✅ Valid Driver's License — 25+ years old</li>
+                  <li>✅ Credit Card in renter’s name</li>
+                  <li>✅ Proof of insurance</li>
+                </ul>
               </CardContent>
             </Card>
           </div>
@@ -284,7 +245,7 @@ export default function BookingPage() {
             <Card className="sticky top-24">
               <CardHeader>
                 <CardTitle>Complete Your Booking</CardTitle>
-                <CardDescription>Select your rental dates to continue</CardDescription>
+                <CardDescription>Select your rental or shoot details to continue</CardDescription>
               </CardHeader>
               <CardContent>
                 {error && (
@@ -292,35 +253,44 @@ export default function BookingPage() {
                 )}
                 <form onSubmit={handleBooking} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="start-date">Pickup Date</Label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Label>Booking Type</Label>
+                    <select
+                      value={bookingType}
+                      onChange={(e) => setBookingType(e.target.value as "rental" | "photoshoot")}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    >
+                      <option value="rental">Rental (Drive)</option>
+                      <option value="photoshoot">Photoshoot</option>
+                    </select>
+                  </div>
+
+                  {bookingType === "rental" ? (
+                    <>
+                      <Label>Pickup Date</Label>
+                      <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+                      <Label>Return Date</Label>
+                      <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+                    </>
+                  ) : (
+                    <>
+                      <Label>Photoshoot Date</Label>
                       <Input
-                        id="start-date"
                         type="date"
-                        className="pl-10"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
+                        value={photoshootDate}
+                        onChange={(e) => setPhotoshootDate(e.target.value)}
                         min={new Date().toISOString().split("T")[0]}
                         required
                       />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="end-date">Return Date</Label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <Label>Booking Duration (Hours)</Label>
                       <Input
-                        id="end-date"
-                        type="date"
-                        className="pl-10"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        min={startDate || new Date().toISOString().split("T")[0]}
+                        type="number"
+                        min={1}
+                        value={isNaN(hours) ? "" : hours}
+                        onChange={(e) => setHours(parseInt(e.target.value))}
                         required
                       />
-                    </div>
-                  </div>
+                    </>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="pickup-location">Pickup Location</Label>
@@ -332,31 +302,21 @@ export default function BookingPage() {
                       required
                     >
                       <option value="">Select a location</option>
-                      {Array.isArray(car.location) &&
-                        car.location.map((loc) => (
-                          <option key={loc} value={loc}>
-                            {loc}
-                          </option>
-                        ))}
+                      {Array.isArray(car.location)
+                        ? car.location.map((loc) => (
+                            <option key={loc} value={loc}>
+                              {loc}
+                            </option>
+                          ))
+                        : <option value={car.location}>{car.location}</option>}
                     </select>
                   </div>
 
                   <Separator />
 
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Daily Rate:</span>
-                      <span>${car.price_per_day}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Number of Days:</span>
-                      <span>{totalDays}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between font-bold">
-                      <span>Total:</span>
-                      <span>${totalPrice}</span>
-                    </div>
+                  <div className="flex justify-between font-bold">
+                    <span>Total:</span>
+                    <span>${totalPrice}</span>
                   </div>
 
                   <Button
@@ -364,12 +324,11 @@ export default function BookingPage() {
                     className="w-full bg-red-600 hover:bg-red-700 text-white"
                     disabled={isProcessing}
                   >
-                    {isProcessing ? "Processing..." : "Request Booking"}
+                    {isProcessing ? "Processing..." : "Submit Booking Request"}
                   </Button>
 
-                  <p className="text-xs text-gray-500 text-center">
-                    Your booking will be reviewed by our team before confirmation. Payment will be collected after
-                    approval.
+                  <p className="text-xs text-gray-500 text-center mt-2">
+                    Your booking will be reviewed before confirmation. Payment is due after approval.
                   </p>
                 </form>
               </CardContent>
@@ -380,4 +339,3 @@ export default function BookingPage() {
     </PageLayout>
   )
 }
-

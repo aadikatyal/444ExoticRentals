@@ -42,11 +42,11 @@ export default function AdminBookingsPage() {
   const updateStatus = async (id: string, status: "approved" | "rejected") => {
     const confirmAction = window.confirm(`Are you sure you want to ${status} this booking?`)
     if (!confirmAction) return
-  
+
     setLoading(true)
     const supabase = createClient()
     const { error } = await supabase.from("bookings").update({ status }).eq("id", id)
-  
+
     if (error) {
       console.error("Update failed", error)
     } else {
@@ -108,6 +108,8 @@ export default function AdminBookingsPage() {
                   <th className="px-4 py-3">User</th>
                   <th className="px-4 py-3">Car</th>
                   <th className="px-4 py-3">Dates</th>
+                  <th className="px-4 py-3">Type</th>
+                  <th className="px-4 py-3">Hours</th>
                   <th className="px-4 py-3">Location</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Actions</th>
@@ -130,9 +132,9 @@ export default function AdminBookingsPage() {
                       )}
                     </td>
                     <td className="px-4 py-2">{b.cars?.name || "Unknown car"}</td>
-                    <td className="px-4 py-2">
-                      {b.start_date} - {b.end_date}
-                    </td>
+                    <td className="px-4 py-2">{b.start_date} - {b.end_date}</td>
+                    <td className="px-4 py-2 capitalize">{b.booking_type}</td>
+                    <td className="px-4 py-2">{b.hours ?? "-"}</td>
                     <td className="px-4 py-2">{b.pickup_location}</td>
                     <td className="px-4 py-2 capitalize">{b.status}</td>
                     <td className="px-4 py-2 space-x-2">

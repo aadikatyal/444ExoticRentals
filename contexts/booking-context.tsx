@@ -7,7 +7,16 @@ import { useUser } from "@/contexts/user-context"
 type BookingContextType = {
   bookings: any[]
   isLoading: boolean
-  createBookingRequest: (carId: string, startDate: string, endDate: string, location: string, totalPrice: number) => Promise<any>
+  createBookingRequest: (
+    carId: string,
+    startDate: string,
+    endDate: string,
+    location: string,
+    totalPrice: number,
+    bookingType: "rental" | "photoshoot",
+    hours?: number | null
+  ) => Promise<any>
+  
   cancelBooking: (bookingId: string) => Promise<void>
   refreshBookings: () => Promise<void>
 }
@@ -57,10 +66,12 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     startDate: string,
     endDate: string,
     location: string,
-    totalPrice: number
+    totalPrice: number,
+    bookingType: "rental" | "photoshoot",
+    hours?: number | null
   ) => {
     if (!user) throw new Error("User must be logged in to create a booking")
-
+  
     try {
       // Check for duplicate booking
       const { data: existing, error: checkError } = await supabase
@@ -70,12 +81,12 @@ export function BookingProvider({ children }: { children: ReactNode }) {
         .eq("user_id", user.id)
         .eq("start_date", startDate)
         .eq("end_date", endDate)
-
+  
       if (checkError) throw checkError
       if (existing.length > 0) {
         throw new Error("You already have a booking for this car and date range.")
       }
-
+  
       const { data, error } = await supabase
         .from("bookings")
         .insert({
@@ -85,20 +96,22 @@ export function BookingProvider({ children }: { children: ReactNode }) {
           end_date: endDate,
           pickup_location: location,
           total_price: totalPrice,
+          booking_type: bookingType,
+          hours: hours ?? null,
           status: "pending",
         })
         .select()
         .single()
-
+  
       if (error) throw error
-
+  
       await refreshBookings()
       return data
     } catch (error) {
       console.error("Error creating booking:", error)
       throw error
     }
-  }
+  }  
 
   const cancelBooking = async (bookingId: string) => {
     try {
