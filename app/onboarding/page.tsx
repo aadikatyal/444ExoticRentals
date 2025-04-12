@@ -41,13 +41,18 @@ export default function OnboardingPage() {
           email: user.email,
           onboarded: false,
         })
+        console.log("✅ New profile inserted for user", user.id)
+      } else {
+        console.log("ℹ️ Profile already exists for user", user.id)
       }
     }
 
     if (!isLoading && user) {
+      console.log("👤 User loaded in onboarding effect:", user)
       ensureProfileExists()
 
       if (profile) {
+        console.log("📄 Existing profile:", profile)
         setFormData((prev) => ({
           ...prev,
           first_name: profile.first_name || "",
@@ -84,6 +89,8 @@ export default function OnboardingPage() {
     const supabase = createClient()
 
     try {
+      console.log("🚀 Submitting onboarding form for user:", user?.id)
+
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("id")
@@ -95,6 +102,7 @@ export default function OnboardingPage() {
           .from("profiles")
           .insert({ id: user!.id, email: user!.email })
         if (insertError) throw insertError
+        console.log("🆕 Profile created for user")
       }
 
       const uploads: any = {}
@@ -103,6 +111,7 @@ export default function OnboardingPage() {
         const { error } = await supabase.storage.from("user-documents").upload(filePath, file)
         if (error) throw error
         uploads[`${key}_file`] = filePath
+        console.log(`📤 Uploaded ${key} to ${filePath}`)
       }
 
       if (formData.license_file) await uploadFile(formData.license_file, "license")
@@ -114,21 +123,26 @@ export default function OnboardingPage() {
         ...uploads,
         onboarded: true,
       })
+      console.log("✅ Profile updated with onboarded: true")
 
-      // Manually re-check updated value before routing
-      const { data: updatedProfile } = await supabase
+      const { data: updatedProfile, error: fetchError } = await supabase
         .from("profiles")
         .select("onboarded")
         .eq("id", user!.id)
         .maybeSingle()
 
+      console.log("🔁 Refetched onboarding status:", updatedProfile)
+      if (fetchError) console.error("❌ Error fetching updated profile:", fetchError)
+
       if (updatedProfile?.onboarded) {
+        console.log("🎉 Onboarding complete. Redirecting to /account")
         router.refresh()
         router.push("/account")
       } else {
         setError("Profile was saved but onboarding state is not reflected yet. Please try again.")
       }
     } catch (error: any) {
+      console.error("❌ Onboarding error:", error)
       setError(error.message || "An error occurred while saving your profile")
     } finally {
       setIsSubmitting(false)
