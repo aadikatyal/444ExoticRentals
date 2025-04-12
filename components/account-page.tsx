@@ -153,14 +153,15 @@ export default function AccountPage() {
 
   const renderBookings = (bookings, defaultLabel, defaultBadgeClass, showPay = false) =>
     bookings.map((rental) => {
-      const [label, badgeClass] = defaultLabel === "Confirmed"
-        ? getStatusLabel(rental.start_date, rental.end_date)
-        : [defaultLabel, defaultBadgeClass]
-
+      const [label, badgeClass] =
+        defaultLabel === "Confirmed"
+          ? getStatusLabel(rental.start_date, rental.end_date)
+          : [defaultLabel, defaultBadgeClass]
+  
       return (
         <Card key={rental.id} className="overflow-hidden">
-          <div className="flex flex-col md:flex-row">
-            <div className="relative w-full md:w-48 h-32">
+          <div className="flex md:flex-row flex-col">
+            <div className="relative w-full md:w-48 h-32 md:h-auto">
               <Image
                 src={rental.cars?.image_url || "/placeholder.svg"}
                 alt={rental.cars?.name || "Car"}
@@ -168,34 +169,36 @@ export default function AccountPage() {
                 className="object-cover"
               />
             </div>
-            <div className="flex-1 p-6 flex flex-col justify-between">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div className="flex-1 p-4 flex flex-col justify-between">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div>
                   <h3 className="text-lg font-bold">{rental.cars?.name || "Unknown Car"}</h3>
                   <p className="text-sm text-gray-500">Booking ID: {rental.id}</p>
                 </div>
-                <div className="mt-2 md:mt-0">
-                  <span className={`inline-flex items-center rounded-full ${badgeClass} px-2.5 py-0.5 text-xs font-medium`}>
-                    {label}
-                  </span>
+                <span className={`inline-flex items-center rounded-full ${badgeClass} px-2.5 py-0.5 text-xs font-medium`}>
+                  {label}
+                </span>
+              </div>
+  
+              <div className="mt-2 text-sm text-gray-600 flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+                <div>
+                  {rental.start_date} – {rental.end_date} · {rental.pickup_location} · ${rental.total_price}
                 </div>
-              </div>
-              <div className="mt-2 text-sm text-gray-600">
-                {rental.start_date} - {rental.end_date} · {rental.pickup_location} · ${rental.total_price}
-              </div>
-              {showPay && (
-                <div className="mt-2 md:self-end">
-                  <Button onClick={() => handlePay(rental)} className="bg-black text-white hover:bg-gray-900">
+                {showPay && (
+                  <Button
+                    onClick={() => handlePay(rental)}
+                    className="bg-black text-white hover:bg-gray-900 w-fit md:ml-auto"
+                  >
                     Pay Now
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </Card>
       )
     })
-
+  
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
