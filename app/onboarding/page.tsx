@@ -6,7 +6,7 @@ import { useUser } from "@/contexts/user-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageLayout } from "@/components/page-layout"
 import { createClient } from "@/lib/supabase/client"
 
@@ -46,7 +46,7 @@ export default function OnboardingPage() {
 
     if (!isLoading) {
       if (!user) {
-        router.push("/login?redirect=/onboarding") 
+        router.push("/login?redirect=/onboarding")
         return
       }
 
@@ -91,7 +91,6 @@ export default function OnboardingPage() {
     e.preventDefault()
     setIsSubmitting(true)
     setError("")
-
     const supabase = createClient()
 
     try {
@@ -105,7 +104,6 @@ export default function OnboardingPage() {
         const { error: insertError } = await supabase
           .from("profiles")
           .insert({ id: user!.id, email: user!.email })
-
         if (insertError) throw insertError
       }
 
@@ -127,7 +125,11 @@ export default function OnboardingPage() {
         onboarded: true,
       })
 
-      router.push("/account")
+      // Wait for Supabase update to settle and refresh router
+      setTimeout(() => {
+        router.refresh()
+        router.push("/account")
+      }, 300) // 300ms delay for consistency across deploys
     } catch (error: any) {
       setError(error.message || "An error occurred while saving your profile")
     } finally {
@@ -214,7 +216,6 @@ export default function OnboardingPage() {
                 : "Upload your documents"}
             </CardDescription>
           </CardHeader>
-
           <CardContent>
             <form onSubmit={handleSubmit}>
               {error && (
@@ -222,9 +223,7 @@ export default function OnboardingPage() {
                   {error}
                 </div>
               )}
-
               {renderStep()}
-
               <div className="flex justify-between mt-6">
                 {step > 1 ? (
                   <Button variant="outline" type="button" onClick={prevStep} disabled={isSubmitting}>
@@ -233,7 +232,6 @@ export default function OnboardingPage() {
                 ) : (
                   <div />
                 )}
-
                 {step < 3 ? (
                   <Button className="bg-red-600 hover:bg-red-700 text-white" type="button" onClick={nextStep}>
                     Continue
