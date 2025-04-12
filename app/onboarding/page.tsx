@@ -82,26 +82,23 @@ export default function OnboardingPage() {
     setIsSubmitting(true)
     setError("")
     const supabase = createClient()
-  
+
     try {
-      console.log("🧾 Starting onboarding submit...")
-      console.log("🧾 User:", user)
       console.log("🧾 FormData:", formData)
-  
+
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("id")
         .eq("id", user!.id)
         .maybeSingle()
-  
+
       if (!existingProfile) {
-        console.log("🧾 Inserting new profile...")
         const { error: insertError } = await supabase
           .from("profiles")
           .insert({ id: user!.id, email: user!.email })
         if (insertError) throw insertError
       }
-  
+
       const uploads: any = {}
       const uploadFile = async (file: File, key: string) => {
         const filePath = `${user!.id}/${Date.now()}-${key}`
@@ -109,23 +106,25 @@ export default function OnboardingPage() {
         if (error) throw error
         uploads[`${key}_file`] = filePath
       }
-  
+
       if (formData.license_file) await uploadFile(formData.license_file, "license")
       if (formData.registration_file) await uploadFile(formData.registration_file, "registration")
       if (formData.insurance_file) await uploadFile(formData.insurance_file, "insurance")
-  
+
       console.log("📤 Uploads complete:", uploads)
-  
+
       await updateProfile({
         ...formData,
         ...uploads,
         onboarded: true,
       })
-  
+
       console.log("✅ Profile updated — navigating to /account...")
-  
-      router.refresh()
-      router.push("/account")
+
+      // Use timeout and full reload for Vercel reliability
+      setTimeout(() => {
+        window.location.href = "/account"
+      }, 200)
     } catch (error: any) {
       console.error("❌ Onboarding error:", error)
       setError(error.message || "An error occurred while saving your profile")
@@ -133,7 +132,6 @@ export default function OnboardingPage() {
       setIsSubmitting(false)
     }
   }
-  
 
   const renderStep = () => {
     if (step === 1) {
