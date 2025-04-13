@@ -40,6 +40,7 @@ export default function BookingPage() {
   useEffect(() => {
     const urlStartDate = searchParams.get("startDate")
     const urlEndDate = searchParams.get("endDate")
+    const today = new Date().toISOString().split("T")[0]
 
     if (urlStartDate) {
       setStartDate(urlStartDate)
@@ -56,6 +57,8 @@ export default function BookingPage() {
       threedays.setDate(threedays.getDate() + 3)
       setEndDate(threedays.toISOString().split("T")[0])
     }
+
+    setPhotoshootDate(today)
   }, [searchParams])
 
   useEffect(() => {
@@ -171,7 +174,6 @@ export default function BookingPage() {
 
       <div className="container mx-auto py-12 px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Car Details */}
           <div className="lg:col-span-2">
             <Card className="mb-8">
               <div className="relative h-64 rounded-t-lg overflow-hidden">
@@ -201,7 +203,11 @@ export default function BookingPage() {
 
                 <Separator className="my-6" />
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="flex flex-col">
+                    <span className="text-gray-600 text-sm">Color</span>
+                    <span className="font-semibold">{car.color} </span>
+                  </div>
                   <div className="flex flex-col">
                     <span className="text-gray-600 text-sm">Horsepower</span>
                     <span className="font-semibold">{car.horsepower} HP</span>
@@ -240,7 +246,6 @@ export default function BookingPage() {
             </Card>
           </div>
 
-          {/* Booking Form */}
           <div className="lg:col-span-1">
             <Card className="sticky top-24">
               <CardHeader>
@@ -265,14 +270,14 @@ export default function BookingPage() {
                   </div>
 
                   {bookingType === "rental" ? (
-                    <>
+                    <div className="space-y-2">
                       <Label>Pickup Date</Label>
                       <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
                       <Label>Return Date</Label>
                       <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
-                    </>
+                    </div>
                   ) : (
-                    <>
+                    <div className="space-y-2">
                       <Label>Photoshoot Date</Label>
                       <Input
                         type="date"
@@ -289,7 +294,7 @@ export default function BookingPage() {
                         onChange={(e) => setHours(parseInt(e.target.value))}
                         required
                       />
-                    </>
+                    </div>
                   )}
 
                   <div className="space-y-2">

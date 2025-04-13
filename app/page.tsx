@@ -114,7 +114,7 @@ export default function Home() {
                 </Link>
               </div>
               <div className="relative h-64 md:h-auto">
-                <Image src="/placeholder.svg?height=400&width=600" alt="Luxury car" fill className="object-cover" />
+                <Image src="/images/red-ferrari.jpg?height=400&width=600" alt="Luxury car" fill className="object-cover" />
               </div>
             </div>
           </div>
