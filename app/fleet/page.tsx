@@ -16,8 +16,20 @@ import { CarDetailModal } from "@/components/car-detail-modal"
 
 export default function FleetPage() {
   const [filtersOpen, setFiltersOpen] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
   const { filteredCars, isLoading, filters, setFilters } = useCars()
   const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024
+      setIsMobile(mobile)
+      setFiltersOpen(!mobile)
+    }
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   useEffect(() => {
     const location = searchParams.get("location")
@@ -44,7 +56,7 @@ export default function FleetPage() {
     <PageLayout>
       <div className="container mx-auto py-12 px-4">
         <h1 className="text-3xl font-bold mb-2">Our Exotic Car Fleet</h1>
-        
+
         <p className="text-lg text-gray-600 max-w-2xl mb-10">
           Experience the thrill of driving the world's most prestigious vehicles in Miami and Atlanta
         </p>
@@ -57,7 +69,11 @@ export default function FleetPage() {
                   <Filter className="h-5 w-5 text-red-600 mr-2" />
                   <h2 className="text-xl font-bold">Filters</h2>
                 </div>
-                {filtersOpen ? <ChevronUp className="h-5 w-5 text-gray-500" /> : <ChevronDown className="h-5 w-5 text-gray-500" />}
+                {filtersOpen ? (
+                  <ChevronUp className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <ChevronDown className={`h-5 w-5 text-gray-500 ${isMobile ? "animate-bounce" : ""}`} />
+                )}
               </div>
 
               {filtersOpen && (
