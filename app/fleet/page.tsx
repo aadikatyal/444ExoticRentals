@@ -19,6 +19,11 @@ export default function FleetPage() {
   const [isMobile, setIsMobile] = useState(false)
   const { filteredCars, isLoading, filters, setFilters } = useCars()
   const searchParams = useSearchParams()
+  const [price, setPrice] = useState(filters.priceRange[0] || 500)
+
+  useEffect(() => {
+    setPrice(filters.priceRange[1])
+  }, [filters.priceRange])
 
   useEffect(() => {
     const handleResize = () => {
@@ -112,18 +117,24 @@ export default function FleetPage() {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <Label>Price Range (per day)</Label>
-                        <span className="text-sm text-gray-500">
-                          ${filters.priceRange[0]} - ${filters.priceRange[1]}
-                        </span>
+                        <span className="text-sm text-gray-500">${price}</span>
                       </div>
-                      <Slider
-                        value={filters.priceRange}
-                        max={3000}
-                        min={500}
-                        step={100}
-                        className="mt-2"
-                        onValueChange={(value) => setFilters({ priceRange: value as [number, number] })}
-                      />
+
+                      <div className="relative">
+                        <Slider
+                          value={[filters.priceRange[1]]}
+                          min={500}
+                          max={3000}
+                          step={100}
+                          onValueChange={([val]) => {
+                            setFilters({ ...filters, priceRange: [500, val] })
+                            setPrice(val)
+                          }}
+                          className="mt-2"
+                        />
+                        <div className="absolute top-full w-full flex justify-between text-sm text-gray-500 mt-1">
+                        </div>
+                      </div>
                     </div>
 
                     <Separator />
@@ -201,17 +212,17 @@ export default function FleetPage() {
                 <h3 className="text-xl font-bold mb-2">No cars match your filters</h3>
                 <p className="text-gray-600 mb-4">Try adjusting your filters to see more options</p>
                 <Button
-                  variant="outline"
-                  onClick={() =>
-                    setFilters({
-                      location: "all",
-                      vehicleType: "all",
-                      priceRange: [500, 2000],
-                      make: {},
-                      features: {},
-                    })
-                  }
-                >
+                    variant="outline"
+                    onClick={() =>
+                      setFilters({
+                        location: "all",
+                        vehicleType: "all",
+                        priceRange: [500, price],
+                        make: {},
+                        features: {},
+                      })
+                    }
+                  >
                   Reset Filters
                 </Button>
               </div>

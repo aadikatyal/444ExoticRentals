@@ -75,7 +75,7 @@ export default function CarForm({ carId }: CarFormProps) {
       make: form.make,
       model: form.model,
       year: form.year ? parseInt(form.year) : null,
-      price_per_day: form.price_per_day ? parseFloat(form.price_per_day) : null,
+      price_per_day: form.price_per_day ? Math.round(Number(form.price_per_day) / 100) * 100 : null,
       location: form.location,
       image_url: form.image_url,
       description: form.description,
