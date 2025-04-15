@@ -6,24 +6,23 @@ import { PageLayout } from "@/components/page-layout"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { Filter, ChevronDown, ChevronUp } from "lucide-react"
 import { useCars } from "@/contexts/car-context"
 import CarCard from "@/components/car-card"
 import { CarDetailModal } from "@/components/car-detail-modal"
+import { Range } from "react-range"
 
 export default function FleetPage() {
   const [filtersOpen, setFiltersOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const { filteredCars, isLoading, filters, setFilters } = useCars()
   const searchParams = useSearchParams()
-  const [price, setPrice] = useState(filters.priceRange[0] || 500)
 
-  useEffect(() => {
-    setPrice(filters.priceRange[1])
-  }, [filters.priceRange])
+  const MIN = 500
+  const MAX = 3000
+  const STEP = 100
 
   useEffect(() => {
     const handleResize = () => {
@@ -61,7 +60,6 @@ export default function FleetPage() {
     <PageLayout>
       <div className="container mx-auto py-12 px-4">
         <h1 className="text-3xl font-bold mb-2">Our Exotic Car Fleet</h1>
-
         <p className="text-lg text-gray-600 max-w-2xl mb-10">
           Experience the thrill of driving the world's most prestigious vehicles in Miami and Atlanta
         </p>
@@ -117,23 +115,48 @@ export default function FleetPage() {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <Label>Price Range (per day)</Label>
-                        <span className="text-sm text-gray-500">${price}</span>
+                        <span className="text-sm text-gray-500">
+                          ${filters.priceRange[0]} - ${filters.priceRange[1]}
+                        </span>
                       </div>
 
-                      <div className="relative">
-                        <Slider
-                          value={[filters.priceRange[1]]}
-                          min={500}
-                          max={3000}
-                          step={100}
-                          onValueChange={([val]) => {
-                            setFilters({ ...filters, priceRange: [500, val] })
-                            setPrice(val)
-                          }}
-                          className="mt-2"
-                        />
-                        <div className="absolute top-full w-full flex justify-between text-sm text-gray-500 mt-1">
-                        </div>
+                      <Range
+                        step={STEP}
+                        min={MIN}
+                        max={MAX}
+                        values={filters.priceRange}
+                        onChange={(values) => setFilters({ ...filters, priceRange: values })}
+                        renderTrack={({ props, children }) => (
+                          <div
+                            {...props}
+                            style={{
+                              ...props.style,
+                              height: "6px",
+                              width: "100%",
+                              background: `linear-gradient(to right, #e5e7eb ${(filters.priceRange[0] - MIN) / (MAX - MIN) * 100}%, black ${(filters.priceRange[0] - MIN) / (MAX - MIN) * 100}% ${(filters.priceRange[1] - MIN) / (MAX - MIN) * 100}%, #e5e7eb ${(filters.priceRange[1] - MIN) / (MAX - MIN) * 100}%)`,
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {children}
+                          </div>
+                        )}
+                        renderThumb={({ props }) => (
+                          <div
+                            {...props}
+                            style={{
+                              ...props.style,
+                              height: "12px",
+                              width: "12px",
+                              backgroundColor: "#111",
+                              borderRadius: "50%",
+                            }}
+                          />
+                        )}
+                      />
+
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>${MIN}</span>
+                        <span>${MAX}</span>
                       </div>
                     </div>
 
@@ -172,10 +195,6 @@ export default function FleetPage() {
                         </div>
                       ))}
                     </div>
-
-                    <Button className="w-full bg-red-600 hover:bg-red-700 text-white" onClick={() => setFilters({ ...filters })}>
-                      Apply Filters
-                    </Button>
                   </div>
                 </div>
               )}
@@ -212,17 +231,17 @@ export default function FleetPage() {
                 <h3 className="text-xl font-bold mb-2">No cars match your filters</h3>
                 <p className="text-gray-600 mb-4">Try adjusting your filters to see more options</p>
                 <Button
-                    variant="outline"
-                    onClick={() =>
-                      setFilters({
-                        location: "all",
-                        vehicleType: "all",
-                        priceRange: [500, price],
-                        make: {},
-                        features: {},
-                      })
-                    }
-                  >
+                  variant="outline"
+                  onClick={() =>
+                    setFilters({
+                      location: "all",
+                      vehicleType: "all",
+                      priceRange: [MIN, MAX],
+                      make: {},
+                      features: {},
+                    })
+                  }
+                >
                   Reset Filters
                 </Button>
               </div>
