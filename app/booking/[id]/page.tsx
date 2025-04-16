@@ -92,7 +92,12 @@ export default function BookingConfirmationPage() {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
 
-      <div className="flex-1 flex flex-col justify-center items-center container mx-auto px-4 pt-12 pb-16">
+      <div
+          className="flex-1 flex flex-col justify-center items-center container mx-auto px-4 pb-16"
+          style={{
+            paddingTop: "env(safe-area-inset-top, 3rem)",
+          }}
+        >
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-2">Booking Requested</h1>
           <p className="text-gray-600">
