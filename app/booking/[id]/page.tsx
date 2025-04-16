@@ -58,7 +58,7 @@ export default function BookingConfirmationPage() {
     return (
       <div className="min-h-screen flex flex-col bg-white">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center pt-16">
+        <div className="flex-1 flex items-center justify-center pt-20">
           <p className="text-gray-600">Loading your booking...</p>
         </div>
         <Footer />
@@ -70,7 +70,7 @@ export default function BookingConfirmationPage() {
     return (
       <div className="min-h-screen flex flex-col bg-white">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center pt-16">
+        <div className="flex-1 flex items-center justify-center pt-20">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-600 mx-auto" />
             <h2 className="mt-4 text-xl font-bold">Car Not Found</h2>
@@ -92,18 +92,18 @@ export default function BookingConfirmationPage() {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
 
-      <div
-          className="flex-1 flex flex-col justify-center items-center container mx-auto px-4 pb-16"
-          style={{
-            paddingTop: "env(safe-area-inset-top, 3rem)",
-          }}
-        >
+      <main
+        className="flex-1 flex flex-col justify-center items-center container mx-auto px-4 pb-16"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8rem)", // 4rem accounts for the fixed navbar
+        }}
+      >
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-2">Booking Requested</h1>
           <p className="text-gray-600">
-            Thank you for requesting the <strong>{car.name}</strong> from{" "}
-            <strong>{booking.start_date}</strong> to <strong>{booking.end_date}</strong>.
+          Your booking request will be reviewed and approved shortly. Once approved, it will appear under your <strong>Approved Requests</strong> where you can proceed with payment.
           </p>
+
         </div>
 
         <Card className="w-full max-w-4xl">
@@ -138,7 +138,7 @@ export default function BookingConfirmationPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
+      </main>
 
       <Footer />
     </div>

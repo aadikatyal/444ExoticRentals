@@ -158,6 +158,36 @@ export default function AccountPage() {
           ? getStatusLabel(rental.start_date, rental.end_date)
           : [defaultLabel, defaultBadgeClass]
   
+      const canCancel = rental.status === "pending" || rental.status === "approved"
+  
+      const handleCancelBooking = async (bookingId: string) => {
+        const confirm = window.confirm("Are you sure you want to cancel this booking?")
+        if (!confirm) return
+      
+        const supabase = createClient()
+        const { error } = await supabase.from("bookings").delete().eq("id", bookingId)
+      
+        if (error) {
+          console.error("Failed to cancel booking:", error.message)
+          alert("Failed to cancel booking. Please try again.")
+        } else {
+          alert("Booking canceled.")
+      
+          // 🧠 Re-fetch updated booking list
+          const {
+            data: { user },
+          } = await supabase.auth.getUser()
+          const { data: updatedBookings } = await supabase
+            .from("bookings")
+            .select("*, cars(*)")
+            .eq("user_id", user.id)
+      
+          setPendingBookings(updatedBookings.filter((b) => b.status === "pending"))
+          setApprovedBookings(updatedBookings.filter((b) => b.status === "approved"))
+          setRentalHistory(updatedBookings.filter((b) => b.status === "confirmed"))
+        }
+      }      
+  
       return (
         <Card key={rental.id} className="overflow-hidden">
           <div className="flex md:flex-row flex-col">
@@ -184,20 +214,32 @@ export default function AccountPage() {
                 <div>
                   {rental.start_date} – {rental.end_date} · {rental.pickup_location} · ${rental.total_price}
                 </div>
-                {showPay && (
-                  <Button
-                    onClick={() => handlePay(rental)}
-                    className="bg-black text-white hover:bg-gray-900 w-fit md:ml-auto"
+                <div className="flex gap-2">
+                  {showPay && (
+                    <Button
+                      onClick={() => handlePay(rental)}
+                      className="bg-black text-white hover:bg-gray-900 w-fit"
+                    >
+                      Pay Now
+                    </Button>
+                  )}
+                  {canCancel && (
+                    <Button
+                    variant="destructive"
+                    onClick={() => handleCancelBooking(rental.id)}
+                    className="w-fit"
                   >
-                    Pay Now
-                  </Button>
-                )}
+                    Cancel
+                  </Button>                  
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </Card>
       )
     })
+  
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

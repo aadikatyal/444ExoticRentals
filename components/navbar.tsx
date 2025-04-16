@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { User, Menu, LogOut } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
+import { SheetTitle } from "@/components/ui/sheet"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -115,6 +116,7 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-white text-gray-700">
+              <SheetTitle className="sr-only">Mobile Navigation Menu</SheetTitle>
               <div className="flex flex-col space-y-6 mt-8">
                 {navLinks.map(({ href, label }) => (
                   <Link
