@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Calendar } from "lucide-react"
 import { useCars } from "@/contexts/car-context"
 
@@ -31,17 +37,13 @@ export function BookingForm() {
   }, [])
 
   const handleSearch = () => {
-    setFilters({
-      location,
-      startDate,
-      endDate,
-    })
-
+    setFilters({ location, startDate, endDate })
     router.push(`/fleet?location=${location}&startDate=${startDate}&endDate=${endDate}`)
   }
 
   return (
     <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      {/* Location */}
       <div>
         <Label htmlFor="location" className="text-sm font-medium mb-1 block">
           Location
@@ -58,6 +60,7 @@ export function BookingForm() {
         </Select>
       </div>
 
+      {/* Start Date */}
       <div>
         <Label htmlFor="start-date" className="text-sm font-medium mb-1 block">
           Start Date
@@ -66,15 +69,18 @@ export function BookingForm() {
           <Input
             id="start-date"
             type="date"
-            className="h-12 pl-11 pr-3"
+            className="h-12 pl-3 md:pl-11 pr-3"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
           />
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+          <div className="hidden md:block absolute left-3 top-1/2 -translate-y-1/2">
+            <Calendar className="h-5 w-5 text-gray-400 pointer-events-none" />
+          </div>
         </div>
       </div>
 
+      {/* End Date */}
       <div>
         <Label htmlFor="end-date" className="text-sm font-medium mb-1 block">
           End Date
@@ -83,17 +89,23 @@ export function BookingForm() {
           <Input
             id="end-date"
             type="date"
-            className="h-12 pl-11 pr-3"
+            className="h-12 pl-3 md:pl-11 pr-3"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             min={startDate || new Date().toISOString().split("T")[0]}
           />
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+          <div className="hidden md:block absolute left-3 top-1/2 -translate-y-1/2">
+            <Calendar className="h-5 w-5 text-gray-400 pointer-events-none" />
+          </div>
         </div>
       </div>
 
+      {/* Search Button */}
       <div>
-        <Button className="w-full h-12 bg-red-600 hover:bg-red-700 text-white" onClick={handleSearch}>
+        <Button
+          className="w-full h-12 bg-red-600 hover:bg-red-700 text-white"
+          onClick={handleSearch}
+        >
           Search
         </Button>
       </div>
