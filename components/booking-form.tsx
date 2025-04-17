@@ -1,4 +1,5 @@
 "use client"
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -15,7 +16,6 @@ export function BookingForm() {
   const router = useRouter()
   const { setFilters } = useCars()
 
-  // Set default dates only once when the component mounts
   useEffect(() => {
     if (!startDate) {
       const tomorrow = new Date()
@@ -28,17 +28,15 @@ export function BookingForm() {
       threedays.setDate(threedays.getDate() + 3)
       setEndDate(threedays.toISOString().split("T")[0])
     }
-  }, []) // Empty dependency array to run only once
+  }, [])
 
   const handleSearch = () => {
-    // Update filters in context
     setFilters({
       location,
       startDate,
       endDate,
     })
 
-    // Navigate to fleet page with query params
     router.push(`/fleet?location=${location}&startDate=${startDate}&endDate=${endDate}`)
   }
 
@@ -68,12 +66,12 @@ export function BookingForm() {
           <Input
             id="start-date"
             type="date"
-            className="h-12 pl-10"
+            className="h-12 pl-11 pr-3"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
           />
-          <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
         </div>
       </div>
 
@@ -85,12 +83,12 @@ export function BookingForm() {
           <Input
             id="end-date"
             type="date"
-            className="h-12 pl-10"
+            className="h-12 pl-11 pr-3"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             min={startDate || new Date().toISOString().split("T")[0]}
           />
-          <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
         </div>
       </div>
 
@@ -102,4 +100,3 @@ export function BookingForm() {
     </div>
   )
 }
-
