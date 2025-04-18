@@ -33,10 +33,10 @@ export default function AccountPage() {
         data: { user },
       } = await supabase.auth.getUser()
       
-      if (!user || !user.email || user.email === "unknown@example.com") {
+      if (!user?.id) {
         router.push("/login")
         return
-      }
+      }      
 
       const { data: profileData } = await supabase
         .from("profiles")
