@@ -24,6 +24,9 @@ export async function GET(request: NextRequest) {
     }
 
     if (session) {
+      const adminEmails = ["aadikatyal21@gmail.com"]
+      const isAdmin = adminEmails.includes(session.user.email!)
+
       // 2. Check if profile exists
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -31,30 +34,43 @@ export async function GET(request: NextRequest) {
         .eq("id", session.user.id)
         .maybeSingle()
 
-      // 3. If not, create it and redirect to onboarding
+      if (profileError) {
+        console.error("Error fetching profile:", profileError.message)
+      }
+
+      // 3. If no profile → Create it
       if (!profile) {
-        // List your admin emails here
-        const adminEmails = ["aadikatyal21@gmail.com"]
-      
-        const isAdmin = adminEmails.includes(session.user.email!)
-      
         const { error: insertError } = await supabase.from("profiles").insert({
           id: session.user.id,
           email: session.user.email,
           onboarded: false,
           is_admin: isAdmin,
         })
-      
+
         if (insertError) {
           console.error("Insert error:", insertError.message)
         }
-      
+
         return NextResponse.redirect(new URL("/onboarding", requestUrl.origin))
       }
 
-      // 4. If admin, redirect to admin dashboard
-      if (profile.is_admin) {
+      // 4. If profile exists but is_admin is wrong → Update it
+      if (profile && profile.is_admin !== isAdmin) {
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({ is_admin: isAdmin })
+          .eq("id", session.user.id)
+
+        if (updateError) {
+          console.error("Failed to update is_admin:", updateError.message)
+        }
+      }
+
+      // 5. Redirect based on is_admin
+      if (isAdmin) {
         return NextResponse.redirect(new URL("/admin", requestUrl.origin))
+      } else {
+        return NextResponse.redirect(new URL(redirect, requestUrl.origin))
       }
     }
   }
