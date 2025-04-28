@@ -33,16 +33,22 @@ export async function GET(request: NextRequest) {
 
       // 3. If not, create it and redirect to onboarding
       if (!profile) {
+        // List your admin emails here
+        const adminEmails = ["aadikatyal21@gmail.com"]
+      
+        const isAdmin = adminEmails.includes(session.user.email!)
+      
         const { error: insertError } = await supabase.from("profiles").insert({
           id: session.user.id,
           email: session.user.email,
           onboarded: false,
+          is_admin: isAdmin,
         })
-
+      
         if (insertError) {
           console.error("Insert error:", insertError.message)
         }
-
+      
         return NextResponse.redirect(new URL("/onboarding", requestUrl.origin))
       }
 
