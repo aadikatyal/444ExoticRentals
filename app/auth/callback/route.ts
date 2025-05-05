@@ -6,10 +6,11 @@ import type { NextRequest } from "next/server"
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get("code")
-  const redirect = requestUrl.searchParams.get("redirect") || "/account"
+  const redirectParam = requestUrl.searchParams.get("redirect")
+  const redirectPath = redirectParam?.startsWith("/") ? redirectParam : "/account"
 
   if (code) {
-    const cookieStore = await cookies()
+    const cookieStore = cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
     // 1. Exchange code for session
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
       // 2. Check if profile exists
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, is_admin")
+        .select("id, is_admin, onboarded")
         .eq("id", session.user.id)
         .maybeSingle()
 
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
         console.error("Error fetching profile:", profileError.message)
       }
 
-      // 3. If no profile → Create it
+      // 3. Create profile if missing
       if (!profile) {
         const { error: insertError } = await supabase.from("profiles").insert({
           id: session.user.id,
@@ -54,8 +55,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL("/onboarding", requestUrl.origin))
       }
 
-      // 4. If profile exists but is_admin is wrong → Update it
-      if (profile && profile.is_admin !== isAdmin) {
+      // 4. Update is_admin if needed
+      if (profile.is_admin !== isAdmin) {
         const { error: updateError } = await supabase
           .from("profiles")
           .update({ is_admin: isAdmin })
@@ -66,14 +67,20 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // 5. Redirect based on is_admin
+      // 5. Redirect based on onboarding status and role
+      if (!profile.onboarded) {
+        console.log("User not onboarded. Redirecting to /onboarding")
+        return NextResponse.redirect(new URL("/onboarding", requestUrl.origin))
+      }
+
       if (isAdmin) {
         return NextResponse.redirect(new URL("/admin", requestUrl.origin))
-      } else {
-        return NextResponse.redirect(new URL(redirect, requestUrl.origin))
       }
+
+      console.log("Redirecting to:", redirectPath)
+      return NextResponse.redirect(new URL(redirectPath, requestUrl.origin))
     }
   }
 
-  return NextResponse.redirect(new URL(redirect, requestUrl.origin))
+  return NextResponse.redirect(new URL("/login", requestUrl.origin))
 }
