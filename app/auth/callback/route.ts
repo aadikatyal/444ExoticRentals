@@ -52,10 +52,13 @@ export async function GET(request: NextRequest) {
           console.error("Insert error:", insertError.message)
         }
 
-        return NextResponse.redirect(new URL("/onboarding", requestUrl.origin))
+        // Redirect to onboarding and preserve redirect param
+        return NextResponse.redirect(
+          new URL(`/onboarding?redirect=${encodeURIComponent(redirectPath)}`, requestUrl.origin)
+        )
       }
 
-      // 4. Update is_admin if needed
+      // 4. Update is_admin if outdated
       if (profile.is_admin !== isAdmin) {
         const { error: updateError } = await supabase
           .from("profiles")
@@ -67,17 +70,20 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // 5. Redirect based on onboarding status and role
+      // 5. Redirect to onboarding if not complete
       if (!profile.onboarded) {
-        console.log("User not onboarded. Redirecting to /onboarding")
-        return NextResponse.redirect(new URL("/onboarding", requestUrl.origin))
+        return NextResponse.redirect(
+          new URL(`/onboarding?redirect=${encodeURIComponent(redirectPath)}`, requestUrl.origin)
+        )
       }
 
+      // 6. Redirect based on role
       if (isAdmin) {
         return NextResponse.redirect(new URL("/admin", requestUrl.origin))
       }
 
-      console.log("Redirecting to:", redirectPath)
+      // 7. Normal user: redirect to intended path
+      console.log("✅ Redirecting to:", redirectPath)
       return NextResponse.redirect(new URL(redirectPath, requestUrl.origin))
     }
   }
