@@ -47,9 +47,18 @@ export function CarProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const fetchCars = async () => {
       try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+    
+        if (!session) {
+          console.warn("No Supabase session yet, skipping car fetch.")
+          return
+        }
+    
         const { data, error } = await supabase.from("cars").select("*").eq("available", true)
         if (error) throw error
-
+    
         setCars(data || [])
         setFilteredCars(data || [])
       } catch (error) {
