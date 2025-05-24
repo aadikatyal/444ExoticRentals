@@ -1,23 +1,45 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { User, Menu, LogOut } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import { SheetTitle } from "@/components/ui/sheet"
-import { useUser } from "@/contexts/user-context"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const { user, isLoading, signOut } = useUser()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      setUser(user)
+      setLoading(false)
+    }
+
+    checkUser()
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null)
+    })
+
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
+  }, [supabase])
 
   const handleSignOut = async () => {
-    await signOut()
+    await supabase.auth.signOut()
     router.push("/")
     router.refresh()
   }
@@ -58,7 +80,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-4">
-          {!isLoading && (
+          {!loading && (
             <>
               {user ? (
                 <div className="hidden md:flex items-center gap-4">
