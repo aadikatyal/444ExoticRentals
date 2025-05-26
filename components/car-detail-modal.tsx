@@ -29,7 +29,11 @@ export function CarDetailModal() {
           <>
             <div className="relative h-64 w-full">
               <Image
-                src={selectedCar.image_url || "/placeholder.svg?height=400&width=800"}
+                src={
+                  Array.isArray(selectedCar.image_urls) && selectedCar.image_urls.length > 0
+                    ? selectedCar.image_urls[0]
+                    : "/placeholder.svg?height=400&width=800"
+                }
                 alt={selectedCar.name || "Luxury car"}
                 fill
                 className="object-cover"

@@ -17,11 +17,15 @@ export default function CarCard({ car }: CarCardProps) {
     setSelectedCar(car)
   }
 
+  const coverImage = Array.isArray(car.image_urls) && car.image_urls.length > 0
+    ? car.image_urls[0]
+    : "/placeholder.svg?height=300&width=500"
+
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-200 shadow-sm">
       <div className="relative h-56 overflow-hidden">
         <Image
-          src={car.image_url || "/placeholder.svg?height=300&width=500"}
+          src={coverImage}
           alt={car.name || `${car.make} ${car.model}`}
           fill
           className="object-cover transition-transform duration-500 hover:scale-105"
@@ -65,4 +69,3 @@ export default function CarCard({ car }: CarCardProps) {
     </Card>
   )
 }
-

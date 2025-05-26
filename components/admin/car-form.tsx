@@ -18,10 +18,10 @@ export default function CarForm({ carId }: CarFormProps) {
     name: "",
     make: "",
     model: "",
-    year: "",
     price_per_day: "",
     location: "",
-    image_url: "",
+    color: "",
+    image_urls: [] as string[],
     description: "",
     horsepower: "",
     top_speed: "",
@@ -30,6 +30,7 @@ export default function CarForm({ carId }: CarFormProps) {
     available: true,
     features: "",
   })
+  const [files, setFiles] = useState<FileList | null>(null)
 
   const router = useRouter()
 
@@ -48,11 +49,11 @@ export default function CarForm({ carId }: CarFormProps) {
       setForm({
         ...data,
         features: (data.features || []).join(", "),
-        year: data.year?.toString() || "",
         price_per_day: data.price_per_day?.toString() || "",
         horsepower: data.horsepower?.toString() || "",
         top_speed: data.top_speed?.toString() || "",
         acceleration: data.acceleration?.toString() || "",
+        image_urls: data.image_urls || [],
       })
     }
 
@@ -65,19 +66,46 @@ export default function CarForm({ carId }: CarFormProps) {
     setForm((prev) => ({ ...prev, [name]: val }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleImageUpload = async (): Promise<string[]> => {
+    if (!files) return []
 
     const supabase = createClient()
+    const uploadedUrls: string[] = []
+
+    for (const file of Array.from(files)) {
+      const fileExt = file.name.split(".").pop()
+      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`
+      const { data, error } = await supabase.storage.from("car-images").upload(fileName, file)
+
+      if (error) {
+        console.error("Upload failed for", file.name, error)
+        continue
+      }
+
+      const { data: publicUrlData } = supabase.storage.from("car-images").getPublicUrl(fileName)
+      if (publicUrlData?.publicUrl) {
+        uploadedUrls.push(publicUrlData.publicUrl)
+      }
+    }
+
+    return uploadedUrls
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const supabase = createClient()
+
+    const uploadedUrls = await handleImageUpload()
+    const finalImageUrls = [...form.image_urls, ...uploadedUrls]
 
     const payload = {
       name: form.name,
       make: form.make,
       model: form.model,
-      year: form.year ? parseInt(form.year) : null,
-      price_per_day: form.price_per_day ? Math.round(Number(form.price_per_day) / 100) * 100 : null,
+      price_per_day: form.price_per_day ? Math.round(Number(form.price_per_day)) : null,
       location: form.location,
-      image_url: form.image_url,
+      color: form.color,
+      image_urls: finalImageUrls,
       description: form.description,
       horsepower: form.horsepower ? parseInt(form.horsepower) : null,
       top_speed: form.top_speed ? parseInt(form.top_speed) : null,
@@ -104,28 +132,27 @@ export default function CarForm({ carId }: CarFormProps) {
       <form onSubmit={handleSubmit} className="max-w-xl mx-auto space-y-4 pb-24 mt-10">
         <h2 className="text-xl font-semibold">{carId ? "Edit Car" : "Add New Car"}</h2>
 
-        {[
-          { label: "Name", name: "name" },
-          { label: "Make", name: "make" },
-          { label: "Model", name: "model" },
-          { label: "Year", name: "year", type: "number" },
-          { label: "Price Per Day", name: "price_per_day", type: "number" },
-          { label: "Location", name: "location" },
-          { label: "Horsepower", name: "horsepower", type: "number" },
-          { label: "Top Speed (mph)", name: "top_speed", type: "number" },
-          { label: "Acceleration (0-60s)", name: "acceleration", type: "number" },
-          { label: "Image URL", name: "image_url" },
-        ].map(({ label, name, type = "text" }) => (
+        {["name","make","model","price_per_day","location","color","horsepower","top_speed","acceleration"].map((name) => (
           <div key={name}>
-            <Label>{label}</Label>
+            <Label>{name.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}</Label>
             <Input
-              type={type}
+              type={name.includes("price") || name.includes("speed") ? "number" : "text"}
               name={name}
               value={form[name as keyof typeof form] || ""}
               onChange={handleChange}
             />
           </div>
         ))}
+
+        <div>
+          <Label>Upload Images</Label>
+          <Input type="file" accept="image/*" multiple onChange={(e) => setFiles(e.target.files)} />
+          <div className="flex flex-wrap gap-2 mt-2">
+            {form.image_urls.map((url, idx) => (
+              <img key={idx} src={url} className="h-24 w-auto rounded" />
+            ))}
+          </div>
+        </div>
 
         <div>
           <Label>Vehicle Type</Label>
@@ -135,12 +162,9 @@ export default function CarForm({ carId }: CarFormProps) {
             onChange={handleChange}
             className="w-full border px-2 py-2 rounded"
           >
-            <option value="sedan">Sedan</option>
-            <option value="suv">SUV</option>
-            <option value="coupe">Coupe</option>
-            <option value="convertible">Convertible</option>
-            <option value="truck">Truck</option>
-            <option value="van">Van</option>
+            {["sedan", "suv", "coupe", "convertible", "truck", "van"].map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
           </select>
         </div>
 

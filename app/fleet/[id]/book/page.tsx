@@ -14,6 +14,13 @@ import { useUser } from "@/contexts/user-context"
 import { useBookings } from "@/contexts/booking-context"
 import { useCars } from "@/contexts/car-context"
 import Image from "next/image"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 export default function BookingPage() {
   const params = useParams()
@@ -176,13 +183,34 @@ export default function BookingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Card className="mb-8">
-              <div className="relative h-64 rounded-t-lg overflow-hidden">
-                <Image
-                  src={car.image_url || "/placeholder.svg?height=400&width=800"}
-                  alt={car.name || `${car.make} ${car.model}`}
-                  fill
-                  className="object-cover"
-                />
+            <div className="relative rounded-t-lg overflow-hidden" style={{ height: "28rem" }}>
+                {Array.isArray(car.image_urls) && car.image_urls.length > 0 ? (
+                  <Carousel className="w-full h-full" opts={{ loop: true }}>
+                    <CarouselContent className="h-full">
+                      {car.image_urls.map((url: string, index: number) => (
+                        <CarouselItem key={index} className="basis-full h-full">
+                          <div className="relative w-full h-full min-h-[28rem]">
+                            <Image
+                              src={url}
+                              alt={`Car image ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-4 z-10 bg-white/70 hover:bg-white transition" />
+                    <CarouselNext className="right-4 z-10 bg-white/70 hover:bg-white transition" />
+                  </Carousel>
+                ) : (
+                  <Image
+                    src="/placeholder.svg?height=400&width=800"
+                    alt="Placeholder"
+                    fill
+                    className="object-cover"
+                  />
+                )}
               </div>
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">

@@ -8,6 +8,13 @@ import { Footer } from "@/components/footer"
 import { AlertCircle, MapPin } from "lucide-react"
 import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 export default function BookingConfirmationPage() {
   const searchParams = useSearchParams()
@@ -95,25 +102,46 @@ export default function BookingConfirmationPage() {
       <main
         className="flex-1 flex flex-col justify-center items-center container mx-auto px-4 pb-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8rem)", // 4rem accounts for the fixed navbar
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8rem)",
         }}
       >
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-2">Booking Requested</h1>
           <p className="text-gray-600">
-          Your booking request will be reviewed and approved shortly. Once approved, it will appear under your <strong>Approved Requests</strong> where you can proceed with payment.
+            Your booking request will be reviewed and approved shortly. Once approved, it will appear under your{" "}
+            <strong>Approved Requests</strong> where you can proceed with payment.
           </p>
-
         </div>
 
         <Card className="w-full max-w-4xl">
           <div className="relative h-64 rounded-t-lg overflow-hidden">
-            <Image
-              src={car.image_url || "/placeholder.svg?height=400&width=800"}
-              alt={car.name}
-              fill
-              className="object-cover"
-            />
+            {Array.isArray(car.image_urls) && car.image_urls.length > 0 ? (
+              <Carousel className="w-full h-full" opts={{ loop: true }}>
+                <CarouselContent className="h-full">
+                  {car.image_urls.map((url: string, index: number) => (
+                    <CarouselItem key={index} className="basis-full">
+                      <div className="relative w-full h-64">
+                        <Image
+                          src={url}
+                          alt={`Car image ${index + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-4 z-10 bg-white/70 hover:bg-white transition" />
+                <CarouselNext className="right-4 z-10 bg-white/70 hover:bg-white transition" />
+              </Carousel>
+            ) : (
+              <Image
+                src="/placeholder.svg?height=400&width=800"
+                alt="Placeholder"
+                fill
+                className="object-cover"
+              />
+            )}
           </div>
 
           <CardHeader>

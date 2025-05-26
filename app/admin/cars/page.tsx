@@ -1,5 +1,3 @@
-// app/admin/cars/page.tsx
-
 "use client"
 
 import { useEffect, useState } from "react"
@@ -16,9 +14,7 @@ export default function AdminCarsPage() {
   useEffect(() => {
     const fetchCars = async () => {
       const supabase = createClient()
-      const { data, error } = await supabase
-        .from("cars")
-        .select("*")
+      const { data, error } = await supabase.from("cars").select("*")
 
       if (error) {
         console.error("Error fetching cars:", error)
@@ -57,7 +53,6 @@ export default function AdminCarsPage() {
                 <th className="px-4 py-3">Car</th>
                 <th className="px-4 py-3">Make</th>
                 <th className="px-4 py-3">Model</th>
-                <th className="px-4 py-3">Year</th>
                 <th className="px-4 py-3">Rate ($/day)</th>
                 <th className="px-4 py-3">Location</th>
                 <th className="px-4 py-3">Status</th>
@@ -67,7 +62,7 @@ export default function AdminCarsPage() {
             <tbody>
               {cars.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                     No cars found.
                   </td>
                 </tr>
@@ -77,7 +72,11 @@ export default function AdminCarsPage() {
                     <td className="px-4 py-2">
                       <div className="relative w-20 h-12 rounded overflow-hidden">
                         <Image
-                          src={car.image_url || "/placeholder.svg"}
+                          src={
+                            Array.isArray(car.image_urls) && car.image_urls.length > 0
+                              ? car.image_urls[0]
+                              : "/placeholder.svg"
+                          }
                           alt={car.make || "Car"}
                           fill
                           className="object-cover"
@@ -86,17 +85,24 @@ export default function AdminCarsPage() {
                     </td>
                     <td className="px-4 py-2 capitalize">{car.make || "—"}</td>
                     <td className="px-4 py-2 capitalize">{car.model || "—"}</td>
-                    <td className="px-4 py-2">{car.year || "—"}</td>
                     <td className="px-4 py-2">${car.price_per_day || "—"}</td>
                     <td className="px-4 py-2 capitalize">{car.location || "—"}</td>
                     <td className="px-4 py-2 capitalize">
                       {car.available ? "Available" : "Unavailable"}
                     </td>
                     <td className="px-4 py-2 space-x-2">
-                      <Button size="sm" variant="outline" onClick={() => router.push(`/admin/cars/${car.id}/edit`)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => router.push(`/admin/cars/${car.id}/edit`)}
+                      >
                         Edit
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDelete(car.id)}>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(car.id)}
+                      >
                         Delete
                       </Button>
                     </td>
@@ -108,7 +114,12 @@ export default function AdminCarsPage() {
         </div>
 
         <div className="mt-6">
-          <Button className="bg-amber-400 hover:bg-amber-500 text-black" onClick={() => router.push("/admin/cars/new")}>Add New Car</Button>
+          <Button
+            className="bg-amber-400 hover:bg-amber-500 text-black"
+            onClick={() => router.push("/admin/cars/new")}
+          >
+            Add New Car
+          </Button>
         </div>
       </div>
     </AdminPageWrapper>
