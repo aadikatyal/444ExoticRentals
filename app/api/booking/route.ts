@@ -4,7 +4,19 @@ import { createClient } from "@/lib/supabase/server"
 export async function POST(req: NextRequest) {
   const supabase = createClient()
   const body = await req.json()
-  const { car_id, start_date, end_date, pickup_location, total_price, user_id } = body
+
+  const {
+    car_id,
+    user_id,
+    start_date,
+    end_date,
+    pickup_location,
+    total_price,
+    booking_type,
+    hours,
+    deposit_amount,
+    paid_deposit, // expect true if payment succeeded
+  } = body
 
   // 🔍 Check for duplicate bookings
   const { data: existing, error: checkError } = await supabase
@@ -23,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "You already have a booking for this car and date range." }, { status: 400 })
   }
 
-  // ✅ If no duplicate, insert the booking
+  // ✅ Insert the booking with all relevant fields
   const { data, error } = await supabase.from("bookings").insert([
     {
       car_id,
@@ -32,7 +44,11 @@ export async function POST(req: NextRequest) {
       end_date,
       pickup_location,
       total_price,
-      status: "pending", // or "approved" if admin does that later
+      booking_type,
+      hours,
+      deposit_amount,
+      paid_deposit,
+      status: "pending", // Admin will approve later
     },
   ])
 

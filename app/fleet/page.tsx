@@ -182,18 +182,36 @@ export default function FleetPage() {
 
                     <div className="space-y-3">
                       <Label>Features</Label>
-                      {["convertible", "all-wheel-drive", "v12-engine", "carbon-fiber", "performance-package"].map((feature) => (
-                        <div key={feature} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={feature}
-                            checked={filters.features[feature] || false}
-                            onCheckedChange={(checked) => handleFeatureChange(feature, !!checked)}
-                          />
-                          <label htmlFor={feature} className="text-sm font-medium">
-                            {feature.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
-                          </label>
-                        </div>
-                      ))}
+                      {[
+                          "adaptive-cruise-control",
+                          "all-wheel-drive",
+                          "ambient-lighting",
+                          "carbon-fiber",
+                          "ceramic-brakes",
+                          "convertible",
+                          "custom-exhaust",
+                          "heated-seats",
+                          "launch-control",
+                          "massage-seats",
+                          "panoramic-roof",
+                          "performance-package",
+                          "premium-sound-system",
+                          "rear-seat-entertainment",
+                          "sport-suspension",
+                          "v12-engine",
+                          "wireless-charging"
+                        ].map((feature) => (
+                          <div key={feature} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={feature}
+                              checked={filters.features[feature] || false}
+                              onCheckedChange={(checked) => handleFeatureChange(feature, !!checked)}
+                            />
+                            <label htmlFor={feature} className="text-sm font-medium">
+                              {feature.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
+                            </label>
+                          </div>
+                        ))}
                     </div>
                   </div>
                 </div>

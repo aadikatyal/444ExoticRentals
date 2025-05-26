@@ -9,9 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Calendar, MapPin, AlertCircle } from "lucide-react"
+import { MapPin, AlertCircle } from "lucide-react"
 import { useUser } from "@/contexts/user-context"
-import { useBookings } from "@/contexts/booking-context"
 import { useCars } from "@/contexts/car-context"
 import Image from "next/image"
 import {
@@ -26,8 +25,7 @@ export default function BookingPage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, profile } = useUser()
-  const { createBookingRequest } = useBookings()
+  const { user } = useUser()
   const { cars } = useCars()
 
   const [car, setCar] = useState<any>(null)
@@ -126,17 +124,37 @@ export default function BookingPage() {
         if (hours <= 0) throw new Error("Please enter a valid number of hours")
       }
 
-      const booking = await createBookingRequest(
-        car.id,
-        bookingType === "rental" ? startDate : photoshootDate,
-        bookingType === "rental" ? endDate : photoshootDate,
-        pickupLocation,
-        totalPrice,
-        bookingType,
-        bookingType === "photoshoot" ? hours : null
-      )
+      const res = await fetch("/api/checkout/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          carId: car.id,
+          startDate: bookingType === "rental" ? startDate : photoshootDate,
+          endDate: bookingType === "rental" ? endDate : photoshootDate,
+          location: pickupLocation,
+          totalPrice,
+          bookingType,
+          hours: bookingType === "photoshoot" ? hours : null,
+          depositAmount: bookingType === "photoshoot" ? 250 : 2000, // ✅ required
+        }),
+      })
 
-      router.push(`/booking/confirmation?booking_id=${booking.id}`)
+      if (!res.ok) {
+        throw new Error("Failed to initiate deposit payment")
+      }
+      
+      let data: any = {}
+      try {
+        data = await res.json()
+      } catch {
+        throw new Error("Invalid response from the server")
+      }
+      
+      if (!data.url) {
+        throw new Error("Missing Stripe redirect URL")
+      }
+      
+      window.location.href = data.url
     } catch (error: any) {
       setError(error.message || "An error occurred while creating your booking")
       setIsProcessing(false)

@@ -15,8 +15,7 @@ type BookingContextType = {
     totalPrice: number,
     bookingType: "rental" | "photoshoot",
     hours?: number | null
-  ) => Promise<any>
-  
+  ) => Promise<void>
   cancelBooking: (bookingId: string) => Promise<void>
   refreshBookings: () => Promise<void>
 }
@@ -73,7 +72,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     if (!user) throw new Error("User must be logged in to create a booking")
   
     try {
-      // Check for duplicate booking
+      // Prevent duplicate booking
       const { data: existing, error: checkError } = await supabase
         .from("bookings")
         .select("id")
@@ -87,31 +86,41 @@ export function BookingProvider({ children }: { children: ReactNode }) {
         throw new Error("You already have a booking for this car and date range.")
       }
   
-      const { data, error } = await supabase
-        .from("bookings")
-        .insert({
-          user_id: user.id,
-          car_id: carId,
-          start_date: startDate,
-          end_date: endDate,
-          pickup_location: location,
-          total_price: totalPrice,
-          booking_type: bookingType,
-          hours: hours ?? null,
-          status: "pending",
-        })
-        .select()
-        .single()
+      // Trigger deposit session
+      const response = await fetch("/api/checkout/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          carId,
+          startDate,
+          endDate,
+          location,
+          totalPrice,
+          bookingType,
+          hours,
+          depositAmount: 1000, // You can calculate this dynamically too
+        }),
+      })
   
-      if (error) throw error
+      const raw = await response.text()
+      console.log("Raw deposit response:", raw)
   
-      await refreshBookings()
-      return data
+      let parsed
+      try {
+        parsed = JSON.parse(raw)
+      } catch (err) {
+        throw new Error("Invalid JSON response from deposit API")
+      }
+  
+      const { url, error } = parsed
+      if (error || !url) throw new Error(error || "Failed to initiate deposit payment")
+  
+      window.location.href = url
     } catch (error) {
-      console.error("Error creating booking:", error)
+      console.error("Error creating booking request:", error)
       throw error
     }
-  }  
+  }
 
   const cancelBooking = async (bookingId: string) => {
     try {
