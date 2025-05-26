@@ -10,13 +10,11 @@ export async function POST(req: NextRequest) {
     user_id,
     start_date,
     end_date,
-    pickup_location,
-    total_price,
-    booking_type,
-    hours,
-    deposit_amount,
-    paid_deposit, // expect true if payment succeeded
   } = body
+
+  if (!car_id || !user_id || !start_date || !end_date) {
+    return NextResponse.json({ error: "Missing required booking fields" }, { status: 400 })
+  }
 
   // 🔍 Check for duplicate bookings
   const { data: existing, error: checkError } = await supabase
@@ -32,29 +30,8 @@ export async function POST(req: NextRequest) {
   }
 
   if (existing.length > 0) {
-    return NextResponse.json({ error: "You already have a booking for this car and date range." }, { status: 400 })
+    return NextResponse.json({ exists: true, message: "Booking already exists for this car and date range." })
   }
 
-  // ✅ Insert the booking with all relevant fields
-  const { data, error } = await supabase.from("bookings").insert([
-    {
-      car_id,
-      user_id,
-      start_date,
-      end_date,
-      pickup_location,
-      total_price,
-      booking_type,
-      hours,
-      deposit_amount,
-      paid_deposit,
-      status: "pending", // Admin will approve later
-    },
-  ])
-
-  if (error) {
-    return NextResponse.json({ error: "Failed to create booking" }, { status: 500 })
-  }
-
-  return NextResponse.json({ success: true, data })
+  return NextResponse.json({ exists: false, message: "No duplicate booking found." })
 }

@@ -1,12 +1,11 @@
-// app/api/checkout/deposit/route.ts
-
 import { NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
+import { v4 as uuidv4 } from "uuid"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16", // latest known stable version
+  apiVersion: "2023-10-16",
 })
 
 export async function POST(req: Request) {
@@ -16,14 +15,14 @@ export async function POST(req: Request) {
       carId,
       startDate,
       endDate,
-      location, // ✅ fixed field name
+      location,
       totalPrice,
       bookingType,
       hours,
       depositAmount,
     } = body
 
-    const cookieStore = await cookies()
+    const cookieStore = cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
     const {
@@ -33,6 +32,9 @@ export async function POST(req: Request) {
     if (!user || !carId || !startDate || !endDate) {
       return NextResponse.json({ error: "Missing booking data" }, { status: 400 })
     }
+
+    // Generate a unique key for this booking attempt
+    const bookingKey = uuidv4()
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -52,17 +54,18 @@ export async function POST(req: Request) {
         },
       ],
       metadata: {
+        booking_key: bookingKey,
         user_id: user.id,
         car_id: carId,
         start_date: startDate,
         end_date: endDate,
-        location, // ✅ fixed here too
+        location,
         total_price: totalPrice,
         booking_type: bookingType,
         hours: hours || "",
         deposit_amount: (depositAmount ?? 0).toString(),
       },
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account?success=deposit`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/booking/confirmation?booking_key=${bookingKey}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/fleet/${carId}?canceled=true`,
     })
 

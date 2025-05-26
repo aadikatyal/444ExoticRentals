@@ -18,7 +18,7 @@ import {
 
 export default function BookingConfirmationPage() {
   const searchParams = useSearchParams()
-  const bookingId = searchParams.get("booking_id")
+  const bookingKey = searchParams.get("booking_key")
   const router = useRouter()
 
   const [booking, setBooking] = useState<any>(null)
@@ -31,15 +31,15 @@ export default function BookingConfirmationPage() {
   useEffect(() => {
     const fetchBookingAndCar = async () => {
       try {
-        if (!bookingId) throw new Error("Booking ID not provided")
+        if (!bookingKey) throw new Error("Booking key not provided")
 
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
-          .eq("id", bookingId)
+          .eq("booking_key", bookingKey)
           .single()
 
-        if (bookingError) throw bookingError
+        if (bookingError || !bookingData) throw new Error("Booking not found")
         setBooking(bookingData)
 
         const { data: carData, error: carError } = await supabase
@@ -48,7 +48,7 @@ export default function BookingConfirmationPage() {
           .eq("id", bookingData.car_id)
           .single()
 
-        if (carError) throw carError
+        if (carError || !carData) throw new Error("Car not found")
         setCar(carData)
       } catch (err: any) {
         console.error("Error fetching booking:", err.message)
@@ -59,7 +59,7 @@ export default function BookingConfirmationPage() {
     }
 
     fetchBookingAndCar()
-  }, [bookingId])
+  }, [bookingKey])
 
   if (loading) {
     return (

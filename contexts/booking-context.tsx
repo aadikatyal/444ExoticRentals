@@ -72,21 +72,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     if (!user) throw new Error("User must be logged in to create a booking")
   
     try {
-      // Prevent duplicate booking
-      const { data: existing, error: checkError } = await supabase
-        .from("bookings")
-        .select("id")
-        .eq("car_id", carId)
-        .eq("user_id", user.id)
-        .eq("start_date", startDate)
-        .eq("end_date", endDate)
-  
-      if (checkError) throw checkError
-      if (existing.length > 0) {
-        throw new Error("You already have a booking for this car and date range.")
-      }
-  
-      // Trigger deposit session
+      // Just trigger Stripe Checkout — DO NOT query or insert anything
       const response = await fetch("/api/checkout/deposit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,7 +84,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
           totalPrice,
           bookingType,
           hours,
-          depositAmount: 1000, // You can calculate this dynamically too
+          depositAmount: 1000, // or calculate based on user tier
         }),
       })
   

@@ -1,5 +1,3 @@
-// app/api/webhooks/stripe/route.ts
-
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createClient } from "@supabase/supabase-js"
@@ -32,13 +30,30 @@ export async function POST(req: NextRequest) {
 
       console.log("✅ Checkout session complete. Metadata:", metadata)
 
-      if (!metadata?.car_id || !metadata?.user_id) {
+      if (!metadata?.booking_key || !metadata?.user_id || !metadata?.car_id) {
         console.error("❌ Missing required metadata")
         return NextResponse.json({ error: "Missing required metadata" }, { status: 400 })
       }
 
+      // 🔍 Prevent duplicate booking insertions
+      const { data: existing, error: checkError } = await supabase
+        .from("bookings")
+        .select("id")
+        .eq("booking_key", metadata.booking_key)
+
+      if (checkError) {
+        console.error("❌ Failed to check for existing booking:", checkError)
+        return NextResponse.json({ error: "Check error" }, { status: 500 })
+      }
+
+      if (existing && existing.length > 0) {
+        console.log("⚠️ Booking already exists. Skipping insert.")
+        return NextResponse.json({ message: "Booking already exists" }, { status: 200 })
+      }
+
       const { error } = await supabase.from("bookings").insert([
         {
+          booking_key: metadata.booking_key,
           car_id: metadata.car_id,
           user_id: metadata.user_id,
           start_date: metadata.start_date,
@@ -55,7 +70,7 @@ export async function POST(req: NextRequest) {
 
       if (error) {
         console.error("❌ Failed to insert booking:", error)
-        return NextResponse.json({ error: "Database insert failed" }, { status: 500 })
+        return NextResponse.json({ error: "Insert failed" }, { status: 500 })
       }
 
       console.log("✅ Booking inserted successfully")

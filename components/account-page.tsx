@@ -23,7 +23,6 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<any>(null)
 
   const router = useRouter()
-  const paymentStatus = searchParams.get("payment")
 
   useEffect(() => {
     const supabase = createClient()
@@ -32,11 +31,11 @@ export default function AccountPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-      
+
       if (!user?.id) {
         router.push("/login")
         return
-      }      
+      }
 
       const { data: profileData } = await supabase
         .from("profiles")
@@ -61,43 +60,22 @@ export default function AccountPage() {
         .order("created_at", { ascending: false })
 
       setMyListings(listings)
-    }
 
-    const handlePay = async (booking) => {
-    try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      // ✅ After deposit, redirect to confirmation with latest booking
+      if (searchParams.get("success") === "deposit") {
+        const { data: latest } = await supabase
+          .from("bookings")
+          .select("id")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single()
 
-      if (!user?.email) {
-        alert("Could not retrieve user email. Please log in again.")
-        return
+        if (latest?.id) {
+          router.push(`/booking/confirmation?booking_id=${latest.id}`)
+        }
       }
-
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingId: booking.id,
-          amount: booking.total_price,
-          userEmail: user.email,
-        }),
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        alert("Payment failed: " + error.error)
-        return
-      }
-
-      const { url } = await res.json()
-      if (url) window.location.href = url
-    } catch (err) {
-      alert("Unexpected error. Check console.")
-      console.error("Unexpected error:", err)
     }
-  }
 
     fetchUserData()
     window.addEventListener("focus", fetchUserData)
