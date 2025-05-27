@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "@/contexts/user-context"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PageLayout } from "@/components/page-layout"
 import { createClient } from "@/lib/supabase/client"
 
-export default function OnboardingPage() {
+function OnboardingForm() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get("redirect") || "/account"
   const { user, profile, isLoading, updateProfile } = useUser()
@@ -86,8 +86,6 @@ export default function OnboardingPage() {
     const supabase = createClient()
 
     try {
-      console.log("🧾 FormData:", formData)
-
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("id")
@@ -95,9 +93,7 @@ export default function OnboardingPage() {
         .maybeSingle()
 
       if (!existingProfile) {
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert({ id: user!.id, email: user!.email })
+        const { error: insertError } = await supabase.from("profiles").insert({ id: user!.id, email: user!.email })
         if (insertError) throw insertError
       }
 
@@ -113,17 +109,12 @@ export default function OnboardingPage() {
       if (formData.registration_file) await uploadFile(formData.registration_file, "registration")
       if (formData.insurance_file) await uploadFile(formData.insurance_file, "insurance")
 
-      console.log("📤 Uploads complete:", uploads)
-
       await updateProfile({
         ...formData,
         ...uploads,
         onboarded: true,
       })
 
-      console.log("✅ Profile updated — navigating to /account...")
-
-      // Use timeout and full reload for Vercel reliability
       setTimeout(() => {
         const redirect = new URLSearchParams(window.location.search).get("redirect") || "/account"
         window.location.href = redirect
@@ -246,5 +237,13 @@ export default function OnboardingPage() {
         </Card>
       </div>
     </PageLayout>
+  )
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <OnboardingForm />
+    </Suspense>
   )
 }
