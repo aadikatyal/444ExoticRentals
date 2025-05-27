@@ -126,7 +126,7 @@ export default function BookingsPage() {
                 <div className="flex flex-col md:flex-row">
                   <div className="relative w-full md:w-48 h-32">
                     <Image
-                      src={booking.cars?.image_url || "/placeholder.svg?height=200&width=300"}
+                      src={booking.cars?.image_urls?.[0] || "/placeholder.svg?height=200&width=300"}
                       alt={booking.cars?.name || "Car"}
                       fill
                       className="object-cover"
