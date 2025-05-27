@@ -3,22 +3,22 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export async function middleware(req: NextRequest) {
-  // Create a Supabase client configured to use cookies
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
-  // Check if the user is authenticated
+  // Get session
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
-  // Check if the request is for a protected route
+  // Route protection
   const isProtectedRoute =
     req.nextUrl.pathname.startsWith("/account") ||
     req.nextUrl.pathname.startsWith("/booking") ||
-    req.nextUrl.pathname.includes("/book")
+    req.nextUrl.pathname.includes("/book") ||
+    req.nextUrl.pathname.startsWith("/admin")
 
-  // If accessing a protected route without authentication, redirect to login
+  // Require login
   if (isProtectedRoute && !session) {
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = "/login"
@@ -26,19 +26,22 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // If accessing login page with authentication, redirect to account
+  // If logged in and visiting login page, redirect to account
   if (req.nextUrl.pathname === "/login" && session) {
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = "/account"
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Check if user has completed onboarding
+  // Onboarding enforcement
   if (session && req.nextUrl.pathname !== "/onboarding") {
     try {
-      const { data: profile } = await supabase.from("profiles").select("onboarded").eq("id", session.user.id).single()
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarded")
+        .eq("id", session.user.id)
+        .single()
 
-      // If user hasn't completed onboarding and isn't on the onboarding page, redirect to onboarding
       if (profile && !profile.onboarded && !req.nextUrl.pathname.startsWith("/auth")) {
         const redirectUrl = req.nextUrl.clone()
         redirectUrl.pathname = "/onboarding"
@@ -49,10 +52,35 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Admin route protection
+  if (session && req.nextUrl.pathname.startsWith("/admin")) {
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", session.user.id)
+        .single()
+
+      if (!profile?.is_admin) {
+        const redirectUrl = req.nextUrl.clone()
+        redirectUrl.pathname = "/account"
+        return NextResponse.redirect(redirectUrl)
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error)
+    }
+  }
+
   return res
 }
 
 export const config = {
-  matcher: ["/account/:path*", "/booking/:path*", "/fleet/:path*/book", "/login", "/onboarding"],
+  matcher: [
+    "/account/:path*",
+    "/booking/:path*",
+    "/fleet/:path*/book",
+    "/login",
+    "/onboarding",
+    "/admin/:path*",
+  ],
 }
-
