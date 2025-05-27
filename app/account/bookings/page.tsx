@@ -37,7 +37,7 @@ export default function BookingsPage() {
               name,
               make,
               model,
-              image_url,
+              image_urls,
               location
             )
           `)
