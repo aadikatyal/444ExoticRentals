@@ -11,10 +11,10 @@ import { PageLayout } from "@/components/page-layout"
 import { createClient } from "@/lib/supabase/client"
 
 export default function OnboardingPage() {
-  const { user, profile, isLoading, updateProfile } = useUser()
-  const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get("redirect") || "/account"
+  const { user, profile, isLoading, updateProfile } = useUser()
+  const router = useRouter()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     first_name: "",
@@ -86,6 +86,8 @@ export default function OnboardingPage() {
     const supabase = createClient()
 
     try {
+      console.log("🧾 FormData:", formData)
+
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("id")
@@ -111,14 +113,20 @@ export default function OnboardingPage() {
       if (formData.registration_file) await uploadFile(formData.registration_file, "registration")
       if (formData.insurance_file) await uploadFile(formData.insurance_file, "insurance")
 
+      console.log("📤 Uploads complete:", uploads)
+
       await updateProfile({
         ...formData,
         ...uploads,
         onboarded: true,
       })
 
+      console.log("✅ Profile updated — navigating to /account...")
+
+      // Use timeout and full reload for Vercel reliability
       setTimeout(() => {
-        router.push(redirectTo)
+        const redirect = new URLSearchParams(window.location.search).get("redirect") || "/account"
+        window.location.href = redirect
       }, 200)
     } catch (error: any) {
       console.error("❌ Onboarding error:", error)
