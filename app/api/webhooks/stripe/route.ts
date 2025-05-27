@@ -30,12 +30,18 @@ export async function POST(req: NextRequest) {
 
       console.log("✅ Checkout session complete. Metadata:", metadata)
 
-      if (!metadata?.booking_key || !metadata?.user_id || !metadata?.car_id) {
+      if (
+        !metadata?.booking_key ||
+        !metadata?.user_id ||
+        !metadata?.car_id ||
+        !metadata?.start_date ||
+        !metadata?.end_date
+      ) {
         console.error("❌ Missing required metadata")
         return NextResponse.json({ error: "Missing required metadata" }, { status: 400 })
       }
 
-      // 🔍 Prevent duplicate booking insertions
+      // 🔍 Check for duplicate booking using booking_key
       const { data: existing, error: checkError } = await supabase
         .from("bookings")
         .select("id")
@@ -51,6 +57,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Booking already exists" }, { status: 200 })
       }
 
+      // ✅ Insert new booking
       const { error } = await supabase.from("bookings").insert([
         {
           booking_key: metadata.booking_key,

@@ -61,8 +61,11 @@ export default function CarForm({ carId }: CarFormProps) {
   }, [carId])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target
-    const val = type === "checkbox" ? checked : value
+    const { name, value, type } = e.target
+    let val: string | boolean = value
+    if (type === "checkbox") {
+      val = (e.target as HTMLInputElement).checked
+    }
     setForm((prev) => ({ ...prev, [name]: val }))
   }
 
@@ -115,6 +118,26 @@ export default function CarForm({ carId }: CarFormProps) {
       features: form.features.split(",").map(f => f.trim()).filter(Boolean),
     }
 
+    // Duplicate check only when adding a new car
+    if (!carId) {
+      const { data: existing, error: checkError } = await supabase
+        .from("cars")
+        .select("id")
+        .eq("name", form.name)
+        .eq("make", form.make)
+        .eq("model", form.model)
+        .maybeSingle()
+      if (checkError) {
+        console.error("Error checking for duplicate car:", checkError)
+        alert("Error checking for duplicate car. Please try again.")
+        return
+      }
+      if (existing) {
+        alert("A car with the same name, make, and model already exists.")
+        return
+      }
+    }
+
     const { error } = carId
       ? await supabase.from("cars").update(payload).eq("id", carId)
       : await supabase.from("cars").insert([payload])
@@ -132,13 +155,15 @@ export default function CarForm({ carId }: CarFormProps) {
       <form onSubmit={handleSubmit} className="max-w-xl mx-auto space-y-4 pb-24 mt-10">
         <h2 className="text-xl font-semibold">{carId ? "Edit Car" : "Add New Car"}</h2>
 
-        {["name","make","model","price_per_day","location","color","horsepower","top_speed","acceleration"].map((name) => (
+        {[
+          "name","make","model","price_per_day","location","color","horsepower","top_speed","acceleration"
+        ].map((name) => (
           <div key={name}>
             <Label>{name.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}</Label>
             <Input
               type={name.includes("price") || name.includes("speed") ? "number" : "text"}
               name={name}
-              value={form[name as keyof typeof form] || ""}
+              value={typeof form[name as keyof typeof form] === "string" || typeof form[name as keyof typeof form] === "number" ? form[name as keyof typeof form] : ""}
               onChange={handleChange}
             />
           </div>
@@ -175,7 +200,7 @@ export default function CarForm({ carId }: CarFormProps) {
 
         <div>
           <Label>Features (comma-separated)</Label>
-          <Input name="features" value={form.features} onChange={handleChange} />
+          <Input name="features" value={typeof form.features === "string" ? form.features : ""} onChange={handleChange} />
         </div>
 
         <div className="flex items-center space-x-2">
@@ -183,7 +208,7 @@ export default function CarForm({ carId }: CarFormProps) {
             type="checkbox"
             name="available"
             id="available"
-            checked={form.available}
+            checked={!!form.available}
             onChange={handleChange}
           />
           <Label htmlFor="available">Available</Label>

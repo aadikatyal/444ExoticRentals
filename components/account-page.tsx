@@ -175,7 +175,7 @@ export default function AccountPage() {
           <div className="flex md:flex-row flex-col">
             <div className="relative w-full md:w-48 h-32 md:h-auto">
               <Image
-                src={rental.cars?.image_url || "/placeholder.svg"}
+                src={rental.cars?.image_urls?.[0] || "/placeholder.svg"}
                 alt={rental.cars?.name || "Car"}
                 fill
                 className="object-cover"

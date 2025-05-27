@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
-import { v4 as uuidv4 } from "uuid"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
@@ -33,8 +32,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing booking data" }, { status: 400 })
     }
 
-    // Generate a unique key for this booking attempt
-    const bookingKey = uuidv4()
+    // Use deterministic booking key to allow duplicate check in webhook
+    const bookingKey = `${user.id}-${carId}-${startDate}-${endDate}`
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -60,10 +59,10 @@ export async function POST(req: Request) {
         start_date: startDate,
         end_date: endDate,
         location,
-        total_price: totalPrice,
+        total_price: totalPrice.toString(),
         booking_type: bookingType,
-        hours: hours || "",
-        deposit_amount: (depositAmount ?? 0).toString(),
+        hours: hours ? hours.toString() : "",
+        deposit_amount: depositAmount.toString(),
       },
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/booking/confirmation?booking_key=${bookingKey}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/fleet/${carId}?canceled=true`,

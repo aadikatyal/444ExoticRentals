@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "@/contexts/user-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,8 @@ import { createClient } from "@/lib/supabase/client"
 export default function OnboardingPage() {
   const { user, profile, isLoading, updateProfile } = useUser()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get("redirect") || "/account"
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     first_name: "",
@@ -84,8 +86,6 @@ export default function OnboardingPage() {
     const supabase = createClient()
 
     try {
-      console.log("🧾 FormData:", formData)
-
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("id")
@@ -111,19 +111,14 @@ export default function OnboardingPage() {
       if (formData.registration_file) await uploadFile(formData.registration_file, "registration")
       if (formData.insurance_file) await uploadFile(formData.insurance_file, "insurance")
 
-      console.log("📤 Uploads complete:", uploads)
-
       await updateProfile({
         ...formData,
         ...uploads,
         onboarded: true,
       })
 
-      console.log("✅ Profile updated — navigating to /account...")
-
-      // Use timeout and full reload for Vercel reliability
       setTimeout(() => {
-        window.location.href = "/account"
+        router.push(redirectTo)
       }, 200)
     } catch (error: any) {
       console.error("❌ Onboarding error:", error)

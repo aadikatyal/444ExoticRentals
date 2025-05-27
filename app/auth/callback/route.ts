@@ -51,7 +51,9 @@ export async function GET(request: NextRequest) {
           console.error("Insert error:", insertError.message)
         }
 
-        return NextResponse.redirect(new URL("/onboarding", requestUrl.origin))
+        return NextResponse.redirect(
+          new URL(`/onboarding?redirect=${encodeURIComponent(redirect)}`, requestUrl.origin)
+        )
       }
 
       // 4. If profile exists but is_admin is wrong → Update it

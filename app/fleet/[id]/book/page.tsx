@@ -30,6 +30,7 @@ export default function BookingPage() {
 
   const [car, setCar] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const canceled = searchParams.get("canceled") === "true"
 
   const [bookingType, setBookingType] = useState<"rental" | "photoshoot">("rental")
   const [hours, setHours] = useState(1)
@@ -135,25 +136,19 @@ export default function BookingPage() {
           totalPrice,
           bookingType,
           hours: bookingType === "photoshoot" ? hours : null,
-          depositAmount: bookingType === "photoshoot" ? 250 : 2000, // ✅ required
+          depositAmount: bookingType === "photoshoot" ? 250 : 2000,
         }),
       })
 
       if (!res.ok) {
         throw new Error("Failed to initiate deposit payment")
       }
-      
-      let data: any = {}
-      try {
-        data = await res.json()
-      } catch {
-        throw new Error("Invalid response from the server")
-      }
-      
+
+      const data = await res.json()
       if (!data.url) {
         throw new Error("Missing Stripe redirect URL")
       }
-      
+
       window.location.href = data.url
     } catch (error: any) {
       setError(error.message || "An error occurred while creating your booking")
