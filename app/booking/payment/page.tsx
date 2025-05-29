@@ -94,6 +94,33 @@ export default function PaymentPage() {
     return formatted.slice(0, 19)
   }
 
+  const handleStripeCheckout = async () => {
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          amount: booking.total_price,
+          userEmail: "user@example.com", // replace with actual user email from Supabase session
+          metadata: {
+            type: "final",                  // 💡 marks this as final payment
+            booking_id: booking.id,        // 💡 so webhook knows which to update
+          },
+        }),
+      })
+  
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url // redirect to Stripe
+      } else {
+        throw new Error("Failed to create Stripe session")
+      }
+    } catch (err: any) {
+      setError(err.message)
+    }
+  }
+
   const formatExpiryDate = (value: string) => {
     // Remove all non-digit characters
     const digits = value.replace(/\D/g, "")
@@ -247,85 +274,27 @@ export default function PaymentPage() {
                       {error}
                     </div>
                   )}
-                  <form onSubmit={handlePayment} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="card-number">Card Number</Label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                        <Input
-                          id="card-number"
-                          placeholder="1234 5678 9012 3456"
-                          className="pl-10"
-                          value={cardNumber}
-                          onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                          maxLength={19}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="card-name">Cardholder Name</Label>
-                      <Input
-                        id="card-name"
-                        placeholder="John Doe"
-                        value={cardName}
-                        onChange={(e) => setCardName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="expiry">Expiry Date</Label>
-                        <div className="relative">
-                          <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                          <Input
-                            id="expiry"
-                            placeholder="MM/YY"
-                            className="pl-10"
-                            value={expiryDate}
-                            onChange={(e) => setExpiryDate(formatExpiryDate(e.target.value))}
-                            maxLength={5}
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="cvv">CVV</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                          <Input
-                            id="cvv"
-                            placeholder="123"
-                            className="pl-10"
-                            value={cvv}
-                            onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
-                            maxLength={3}
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="pt-4">
+                  <div className="pt-4">
                       <Button
-                        type="submit"
+                        type="button"
                         className="w-full bg-red-600 hover:bg-red-700 text-white"
+                        onClick={handleStripeCheckout}
                         disabled={isProcessing}
                       >
                         {isProcessing ? (
                           <>
                             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                            Processing...
+                            Redirecting...
                           </>
                         ) : (
                           `Pay $${booking.total_price}`
                         )}
                       </Button>
+                      <div className="flex items-center justify-center text-xs text-gray-500 mt-2">
+                        <Lock className="h-3 w-3 mr-1" />
+                        Secured by 444exoticrentals
+                      </div>
                     </div>
-                    <div className="flex items-center justify-center text-xs text-gray-500 mt-2">
-                      <Lock className="h-3 w-3 mr-1" />
-                      Secured by 444exoticrentals
-                    </div>
-                  </form>
                 </CardContent>
               </Card>
             </div>

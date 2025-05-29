@@ -13,6 +13,7 @@ import { useCars } from "@/contexts/car-context"
 import CarCard from "@/components/car-card"
 import { CarDetailModal } from "@/components/car-detail-modal"
 import { Range } from "react-range"
+import Link from "next/link"
 
 export default function FleetPage() {
   const [filtersOpen, setFiltersOpen] = useState(true)
@@ -140,18 +141,21 @@ export default function FleetPage() {
                             {children}
                           </div>
                         )}
-                        renderThumb={({ props }) => (
-                          <div
-                            {...props}
-                            style={{
-                              ...props.style,
-                              height: "12px",
-                              width: "12px",
-                              backgroundColor: "#111",
-                              borderRadius: "50%",
-                            }}
-                          />
-                        )}
+                        renderThumb={({ props }) => {
+                          const { key, ...rest } = props
+                          return (
+                            <div
+                              key={key}
+                              {...rest}
+                              style={{
+                                ...rest.style,
+                                height: "8px",
+                                backgroundColor: "#e11d48",
+                                borderRadius: "4px",
+                              }}
+                            />
+                          )
+                        }}
                       />
 
                       <div className="flex justify-between text-sm text-gray-500">

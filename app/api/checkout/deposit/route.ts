@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
+import { v4 as uuidv4 } from "uuid"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
     }
 
     // Use deterministic booking key to allow duplicate check in webhook
-    const bookingKey = `${user.id}-${carId}-${startDate}-${endDate}`
+    const bookingKey = uuidv4()
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],

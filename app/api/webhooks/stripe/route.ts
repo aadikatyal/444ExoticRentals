@@ -30,6 +30,25 @@ export async function POST(req: NextRequest) {
 
       console.log("✅ Checkout session complete. Metadata:", metadata)
 
+      if (metadata?.type === "final") {
+        // Final payment received — mark booking as completed
+        const bookingId = metadata.booking_id
+
+        const { error: updateError } = await supabase
+          .from("bookings")
+          .update({ status: "completed" })
+          .eq("id", bookingId)
+
+        if (updateError) {
+          console.error("❌ Failed to update booking to completed:", updateError)
+          return NextResponse.json({ error: "Update failed" }, { status: 500 })
+        }
+
+        console.log("✅ Booking marked as completed")
+        return NextResponse.json({ message: "Booking marked as completed" }, { status: 200 })
+      }
+
+      // Handle deposit payment: insert new booking
       if (
         !metadata?.booking_key ||
         !metadata?.user_id ||
@@ -37,11 +56,10 @@ export async function POST(req: NextRequest) {
         !metadata?.start_date ||
         !metadata?.end_date
       ) {
-        console.error("❌ Missing required metadata")
+        console.error("❌ Missing required metadata for deposit")
         return NextResponse.json({ error: "Missing required metadata" }, { status: 400 })
       }
 
-      // 🔍 Check for duplicate booking using booking_key
       const { data: existing, error: checkError } = await supabase
         .from("bookings")
         .select("id")
@@ -57,7 +75,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Booking already exists" }, { status: 200 })
       }
 
-      // ✅ Insert new booking
       const { error } = await supabase.from("bookings").insert([
         {
           booking_key: metadata.booking_key,
@@ -71,7 +88,7 @@ export async function POST(req: NextRequest) {
           hours: metadata.hours ? parseInt(metadata.hours) : null,
           deposit_amount: parseFloat(metadata.deposit_amount || "0"),
           paid_deposit: true,
-          status: "pending",
+          status: "confirmed", // After deposit
         },
       ])
 

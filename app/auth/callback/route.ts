@@ -8,74 +8,70 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code")
   const redirect = requestUrl.searchParams.get("redirect") || "/account"
 
-  if (code) {
-    const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  if (!code) {
+    return NextResponse.redirect(new URL(redirect, requestUrl.origin))
+  }
 
-    // 1. Exchange code for session
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.exchangeCodeForSession(code)
+  const cookieStore = cookies()
+  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
-    if (sessionError) {
-      console.error("Error exchanging code for session:", sessionError)
-      return NextResponse.redirect(new URL("/login", requestUrl.origin))
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.exchangeCodeForSession(code)
+
+  if (sessionError || !session) {
+    console.error("Error exchanging code for session:", sessionError?.message)
+    return NextResponse.redirect(new URL("/login", requestUrl.origin))
+  }
+
+  const user = session.user
+  const email = user.email
+  const userId = user.id
+
+  if (!email || !userId) {
+    console.error("Missing user info from session")
+    return NextResponse.redirect(new URL("/login", requestUrl.origin))
+  }
+
+  const adminEmails = ["aadikatyal21@gmail.com"]
+  const isAdmin = adminEmails.includes(email)
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, is_admin")
+    .eq("id", userId)
+    .maybeSingle()
+
+  if (profileError) {
+    console.error("Error fetching profile:", profileError.message)
+  }
+
+  if (!profile) {
+    const { error: insertError } = await supabase.from("profiles").insert({
+      id: userId,
+      email,
+      onboarded: false,
+      is_admin: isAdmin,
+    })
+
+    if (insertError) {
+      console.error("Insert error:", insertError.message)
     }
 
-    if (session) {
-      const adminEmails = ["aadikatyal21@gmail.com"]
-      const isAdmin = adminEmails.includes(session.user.email!)
+    return NextResponse.redirect(new URL(`/onboarding?redirect=${redirect}`, requestUrl.origin))
+  }
 
-      // 2. Check if profile exists
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("id, is_admin")
-        .eq("id", session.user.id)
-        .maybeSingle()
+  if (profile.is_admin !== isAdmin) {
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ is_admin: isAdmin })
+      .eq("id", userId)
 
-      if (profileError) {
-        console.error("Error fetching profile:", profileError.message)
-      }
-
-      // 3. If no profile → Create it
-      if (!profile) {
-        const { error: insertError } = await supabase.from("profiles").insert({
-          id: session.user.id,
-          email: session.user.email,
-          onboarded: false,
-          is_admin: isAdmin,
-        })
-
-        if (insertError) {
-          console.error("Insert error:", insertError.message)
-        }
-
-        return NextResponse.redirect(
-          new URL(`/onboarding?redirect=${encodeURIComponent(redirect)}`, requestUrl.origin)
-        )
-      }
-
-      // 4. If profile exists but is_admin is wrong → Update it
-      if (profile && profile.is_admin !== isAdmin) {
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({ is_admin: isAdmin })
-          .eq("id", session.user.id)
-
-        if (updateError) {
-          console.error("Failed to update is_admin:", updateError.message)
-        }
-      }
-
-      // 5. Redirect based on is_admin
-      if (isAdmin) {
-        return NextResponse.redirect(new URL("/admin", requestUrl.origin))
-      } else {
-        return NextResponse.redirect(new URL(redirect, requestUrl.origin))
-      }
+    if (updateError) {
+      console.error("Failed to update is_admin:", updateError.message)
     }
   }
 
-  return NextResponse.redirect(new URL(redirect, requestUrl.origin))
+  return NextResponse.redirect(new URL(isAdmin ? "/admin" : redirect, requestUrl.origin))
 }

@@ -136,7 +136,7 @@ export default function BookingPage() {
           totalPrice,
           bookingType,
           hours: bookingType === "photoshoot" ? hours : null,
-          depositAmount: bookingType === "photoshoot" ? 250 : 2000,
+          depositAmount: bookingType === "photoshoot" ? 500 : 1500,
         }),
       })
 

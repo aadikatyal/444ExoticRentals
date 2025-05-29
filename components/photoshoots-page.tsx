@@ -131,32 +131,15 @@ export default function PhotoshootsPage() {
 
                     <div className="space-y-3">
                       <Label>Features</Label>
-                      {[
-                        "convertible",
-                        "all-wheel-drive",
-                        "v12-engine",
-                        "carbon-fiber",
-                        "performance-package",
-                        "sunroof",
-                        "heated-seats",
-                        "ventilated-seats",
-                        "massage-seats",
-                        "premium-sound-system",
-                        "ambient-lighting",
-                        "rear-seat-entertainment",
-                        "wireless-charging",
-                        "adaptive-cruise-control",
-                        "panoramic-roof",
-                        "launch-control",
-                        "custom-exhaust",
-                        "ceramic-brakes",
-                        "sport-suspension",
-                        "electric-hybrid"
-                      ].map((feature) => (
+                      {["convertible", "all-wheel-drive", "v12-engine", "carbon-fiber", "performance-package"].map((feature) => (
                         <div key={feature} className="flex items-center space-x-2">
-                          <Checkbox id={feature} />
-                          <label htmlFor={feature} className="text-sm capitalize">
-                            {feature.replace(/-/g, " ")}
+                          <Checkbox
+                            id={feature}
+                            checked={filters.features[feature] || false}
+                            onCheckedChange={(checked) => handleFeatureChange(feature, !!checked)}
+                          />
+                          <label htmlFor={feature} className="text-sm font-medium">
+                            {feature.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
                           </label>
                         </div>
                       ))}
