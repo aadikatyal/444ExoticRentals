@@ -39,9 +39,11 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: "Missing booking_id" }, { status: 400 })
         }
 
+        console.log("Booking ID:", bookingId)
+
         const { error: updateError } = await supabase
           .from("bookings")
-          .update({ status: "confirmed", paid: true })
+          .update({ status: "confirmed" })
           .eq("id", bookingId)
 
         if (updateError) {
@@ -93,7 +95,7 @@ export async function POST(req: NextRequest) {
             hours: metadata.hours ? parseInt(metadata.hours) : null,
             deposit_amount: parseFloat(metadata.deposit_amount || "0"),
             paid_deposit: true,
-            status: "confirmed",
+            status: "pending",
           },
         ])
 
@@ -115,7 +117,13 @@ export async function POST(req: NextRequest) {
 
     return new NextResponse("Unhandled event type", { status: 200 })
   } catch (err) {
-    console.error("❌ Webhook error:", err)
+    if (err instanceof Error) {
+      console.error("❌ Webhook error (message):", err.message)
+      console.error("❌ Webhook error (stack):", err.stack)
+    } else {
+      console.error("❌ Webhook error (raw):", err)
+    }
+  
     return new NextResponse("Webhook error", { status: 400 })
   }
 }

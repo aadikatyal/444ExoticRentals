@@ -29,12 +29,39 @@ export async function POST(req: Request) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user || !carId || !startDate || !endDate) {
+    // ✅ Check for required fields
+    if (!user || !carId || !startDate || !endDate || !location || !totalPrice || !depositAmount || !bookingType) {
+      console.error("❌ Missing booking data", {
+        user: !!user,
+        carId,
+        startDate,
+        endDate,
+        location,
+        totalPrice,
+        depositAmount,
+        bookingType,
+      })
       return NextResponse.json({ error: "Missing booking data" }, { status: 400 })
     }
 
-    // Use deterministic booking key to allow duplicate check in webhook
     const bookingKey = uuidv4()
+
+    const metadata = {
+      type: "deposit",
+      booking_key: bookingKey,
+      user_id: user.id,
+      car_id: carId || "",
+      start_date: startDate || "",
+      end_date: endDate || "",
+      location: location || "",
+      total_price: totalPrice?.toString() || "0",
+      booking_type: bookingType || "",
+      hours: hours ? hours.toString() : "",
+      deposit_amount: depositAmount?.toString() || "0",
+    }
+
+    // ✅ Log metadata for debugging
+    console.log("📦 Creating deposit Stripe session with metadata:", metadata)
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -48,34 +75,24 @@ export async function POST(req: Request) {
               name: `Deposit for ${bookingType} booking`,
               description: `From ${startDate} to ${endDate}`,
             },
-            unit_amount: depositAmount * 100,
+            unit_amount: Math.round(depositAmount * 100),
           },
           quantity: 1,
         },
       ],
-      metadata: {
-        booking_key: bookingKey,
-        user_id: user.id,
-        car_id: carId,
-        start_date: startDate,
-        end_date: endDate,
-        location,
-        total_price: totalPrice.toString(),
-        booking_type: bookingType,
-        hours: hours ? hours.toString() : "",
-        deposit_amount: depositAmount.toString(),
-      },
+      metadata,
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/booking/confirmation?booking_key=${bookingKey}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/fleet/${carId}?canceled=true`,
     })
 
     if (!session.url) {
+      console.error("❌ Stripe session returned no URL")
       return NextResponse.json({ error: "Stripe session failed to return a URL" }, { status: 500 })
     }
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    console.error("Stripe Checkout error:", error)
+    console.error("❌ Stripe Checkout error:", error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }

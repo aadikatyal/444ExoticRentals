@@ -92,9 +92,10 @@ export default function PaymentPage() {
     return formatted.slice(0, 19)
   }
 
-  const handleStripeCheckout = async (booking: any) => {
+  const handleStripeCheckout = async (booking: any, type: "deposit" | "final") => {
     try {
-      const res = await fetch("/api/checkout", {
+      const url = type === "final" ? "/api/checkout/final" : "/api/checkout/deposit"
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,7 +107,7 @@ export default function PaymentPage() {
           totalPrice: booking.total_price,
           bookingType: booking.booking_type || "rental",
           hours: booking.hours || null,
-          userEmail: booking.user_email || "fitcheckf@gmail.com", // fallback
+          userEmail: booking.user_email || "fitcheckf@gmail.com",
         }),
       })
   
@@ -276,21 +277,21 @@ export default function PaymentPage() {
                     </div>
                   )}
                   <div className="pt-4">
-                      <Button
-                        type="button"
-                        className="w-full bg-red-600 hover:bg-red-700 text-white"
-                        onClick={handleStripeCheckout}
-                        disabled={isProcessing}
-                      >
-                        {isProcessing ? (
-                          <>
-                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                            Redirecting...
-                          </>
-                        ) : (
-                          `Pay $${booking.total_price}`
-                        )}
-                      </Button>
+                  <Button
+                      type="button"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white"
+                      onClick={() => handleStripeCheckout(booking, "final")}
+                      disabled={isProcessing}
+                    >
+                      {isProcessing ? (
+                        <>
+                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                          Redirecting...
+                        </>
+                      ) : (
+                        `Pay $${booking.total_price}`
+                      )}
+                    </Button>
                       <div className="flex items-center justify-center text-xs text-gray-500 mt-2">
                         <Lock className="h-3 w-3 mr-1" />
                         Secured by 444exoticrentals
