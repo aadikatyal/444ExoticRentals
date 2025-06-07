@@ -39,8 +39,6 @@ export default function PaymentPage() {
       }
 
       try {
-        // TODO: Replace with Firebase Firestore
-        // This is placeholder data
         const bookingData = {
           id: bookingId,
           car_id: "placeholder-car-id",
@@ -94,30 +92,33 @@ export default function PaymentPage() {
     return formatted.slice(0, 19)
   }
 
-  const handleStripeCheckout = async () => {
+  const handleStripeCheckout = async (booking: any) => {
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           bookingId: booking.id,
-          amount: booking.total_price,
-          userEmail: "user@example.com",
-          metadata: {
-            type: "final",
-            booking_id: booking.id,
-          },
+          carId: booking.car_id,
+          startDate: booking.start_date,
+          endDate: booking.end_date,
+          location: booking.pickup_location || "N/A",
+          totalPrice: booking.total_price,
+          bookingType: booking.booking_type || "rental",
+          hours: booking.hours || null,
+          userEmail: booking.user_email || "fitcheckf@gmail.com", // fallback
         }),
       })
   
       const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url // redirect to Stripe
+      if (data?.url) {
+        window.location.href = data.url
       } else {
-        throw new Error("Failed to create Stripe session")
+        alert(`Payment failed: ${data.error || "Unknown error"}`)
       }
     } catch (err: any) {
-      setError(err.message)
+      console.error("Stripe Checkout error:", err)
+      alert("Payment failed: " + err.message)
     }
   }
 
