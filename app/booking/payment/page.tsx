@@ -102,10 +102,10 @@ export default function PaymentPage() {
         body: JSON.stringify({
           bookingId: booking.id,
           amount: booking.total_price,
-          userEmail: "user@example.com", // replace with actual user email from Supabase session
+          userEmail: "user@example.com",
           metadata: {
-            type: "final",                  // 💡 marks this as final payment
-            booking_id: booking.id,        // 💡 so webhook knows which to update
+            type: "final",
+            booking_id: booking.id,
           },
         }),
       })

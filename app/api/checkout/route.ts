@@ -1,5 +1,3 @@
-// app/api/checkout/route.ts
-
 import { NextResponse } from "next/server"
 import Stripe from "stripe"
 
@@ -20,6 +18,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required data" }, { status: 400 })
     }
 
+    // ✅ Explicitly construct metadata object
+    const metadata = {
+      type: "final",
+      booking_id: bookingId,
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
@@ -30,15 +34,13 @@ export async function POST(req: Request) {
             product_data: {
               name: `Booking #${bookingId}`,
             },
-            unit_amount: Math.round(amount * 100), // convert dollars to cents
+            unit_amount: Math.round(amount * 100),
           },
           quantity: 1,
         },
       ],
       customer_email: userEmail,
-      metadata: {
-        bookingId,
-      },
+      metadata,
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account?payment=success`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account?payment=cancelled`,
     })
