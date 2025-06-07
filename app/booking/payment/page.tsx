@@ -99,7 +99,8 @@ export default function PaymentPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bookingId: booking.id,
+          type,
+          bookingId: booking.id, // required for final
           carId: booking.car_id,
           startDate: booking.start_date,
           endDate: booking.end_date,

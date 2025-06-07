@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         },
       ],
       metadata,
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account?tab=confirmed`, // optional: direct to Confirmed Bookings tab
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account?tab=confirmed`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account?tab=approved`,
     })
 
