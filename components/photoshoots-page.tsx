@@ -113,7 +113,7 @@ export default function PhotoshootsPage() {
 
                     <div className="space-y-3">
                       <Label>Make</Label>
-                      {["lamborghini", "ferrari", "porsche", "mclaren", "bentley", "rolls-royce", "aston-martin"].map((make) => (
+                      {["lamborghini", "ferrari", "porsche", "mclaren", "bentley", "rolls-royce", "aston-martin", "mercedes", "maybach", "maserati", "brabus"].map((make) => (
                         <div key={make} className="flex items-center space-x-2">
                           <Checkbox
                             id={make}

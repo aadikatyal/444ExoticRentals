@@ -48,6 +48,7 @@ export default function CarForm({ carId }: CarFormProps) {
 
       setForm({
         ...data,
+        location: Array.isArray(data.location) ? data.location.join(", ") : data.location,
         features: (data.features || []).join(", "),
         price_per_day: data.price_per_day?.toString() || "",
         horsepower: data.horsepower?.toString() || "",
@@ -106,7 +107,7 @@ export default function CarForm({ carId }: CarFormProps) {
       make: form.make,
       model: form.model,
       price_per_day: form.price_per_day ? Math.round(Number(form.price_per_day)) : null,
-      location: form.location,
+      location: form.location.split(",").map((l) => l.trim()).filter(Boolean),
       color: form.color,
       image_urls: finalImageUrls,
       description: form.description,
