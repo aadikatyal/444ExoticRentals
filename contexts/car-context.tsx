@@ -72,8 +72,8 @@ export function CarProvider({ children }: { children: ReactNode }) {
     if (filters.location !== "all") {
       result = result.filter(
         (car) =>
-          Array.isArray(car.location) &&
-          car.location.some((loc: string) => loc.toLowerCase() === filters.location.toLowerCase())
+          typeof car.location === "string" &&
+          car.location.toLowerCase() === filters.location.toLowerCase()
       )
     }
 
