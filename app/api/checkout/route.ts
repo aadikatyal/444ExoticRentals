@@ -8,15 +8,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { bookingId, userEmail } = body
+    const { bookingId, amount, userEmail } = body
 
-    const priceId = "price_1Rz4T3LnNzpdI7XbLUXXJ2v2"
+    console.log("Incoming checkout request:", { bookingId, amount, userEmail })
+    console.log("Stripe key present:", !!process.env.STRIPE_SECRET_KEY)
 
-    if (!bookingId || !userEmail) {
-      console.error("❌ Missing required data:", { bookingId, userEmail })
+    if (!bookingId || !amount || !userEmail) {
+      console.error("❌ Missing required data:", { bookingId, amount, userEmail })
       return NextResponse.json({ error: "Missing required data" }, { status: 400 })
     }
 
+    // ✅ Explicitly construct metadata object
     const metadata = {
       type: "final",
       booking_id: bookingId,
@@ -24,11 +26,16 @@ export async function POST(req: Request) {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      allow_promotion_codes: true,
       mode: "payment",
       line_items: [
         {
-          price: priceId,
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Booking #${bookingId}`,
+            },
+            unit_amount: Math.round(amount * 100),
+          },
           quantity: 1,
         },
       ],
