@@ -159,7 +159,7 @@ export default function AddListingPage() {
                             <SelectValue placeholder="Select make" />
                           </SelectTrigger>
                           <SelectContent>
-                            {["Ferrari", "Lamborghini", "Porsche", "Bentley", "Rolls Royce", "McLaren", "Aston Martin", "Other"].map(m => (
+                            {["Lamborghini", "Ferrari", "Bentley", "Rolls Royce", "Mercedes", "Maserati", "Brabus", "Aston Martin", "McLaren", "Porsche", "Other"].map(m => (
                               <SelectItem key={m} value={m}>{m}</SelectItem>
                             ))}
                           </SelectContent>

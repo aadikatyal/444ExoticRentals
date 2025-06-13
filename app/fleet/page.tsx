@@ -168,7 +168,7 @@ export default function FleetPage() {
 
                     <div className="space-y-3">
                       <Label>Make</Label>
-                      {["lamborghini", "ferrari", "porsche", "mclaren", "bentley", "rolls-royce", "aston-martin", "mercedes", "maserati", "brabus"].map((make) => (
+                      {["lamborghini", "ferrari", "bentley", "rolls-royce", "mercedes", "maserati", "brabus", "aston-martin", "mclaren", "porsche"].map((make) => (
                         <div key={make} className="flex items-center space-x-2">
                           <Checkbox
                             id={make}
