@@ -212,7 +212,7 @@ export default function LoginPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Create an Account</CardTitle>
-                  <CardDescription>Join 444exoticrentals to rent or list luxury vehicles</CardDescription>
+                  <CardDescription>Join 444ExoticRentals to rent or list luxury vehicles</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleRegister} className="space-y-4">

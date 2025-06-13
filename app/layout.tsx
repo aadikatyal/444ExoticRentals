@@ -10,7 +10,7 @@ import { BookingProvider } from "@/contexts/booking-context"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "444exoticrentals - Luxury Car Rentals in Miami & Atlanta",
+  title: "444ExoticRentals - Luxury Car Rentals in Miami & Atlanta",
   description:
     "Rent exotic cars in Miami and Atlanta. Experience luxury with our premium fleet of supercars and luxury vehicles.",
   generator: "v0.dev",

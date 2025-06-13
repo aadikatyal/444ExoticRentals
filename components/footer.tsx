@@ -116,7 +116,7 @@ export function Footer() {
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2 text-red-600" />
-                <span className="text-gray-600">info@444exoticrentals.com</span>
+                <span className="text-gray-600">info@444ExoticRentals.com</span>
               </li>
             </ul>
           </div>
@@ -139,7 +139,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-200 mt-12 pt-8 text-center text-gray-600">
-          <p>&copy; {new Date().getFullYear()} 444exoticrentals. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} 444ExoticRentals. All rights reserved.</p>
         </div>
       </div>
     </footer>
