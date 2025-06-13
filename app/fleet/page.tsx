@@ -91,7 +91,7 @@ export default function FleetPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Locations</SelectItem>
-                          <SelectItem value="miami">Miami</SelectItem>
+                          <SelectItem value="Miami">Miami</SelectItem>
                           <SelectItem value="atlanta">Atlanta</SelectItem>
                         </SelectContent>
                       </Select>
