@@ -374,7 +374,7 @@ export default function BookingPage() {
                   </Button>
 
                   <p className="text-xs text-gray-500 text-center mt-2">
-                    Your booking will be reviewed before confirmation. Payment is due after approval.
+                    A deposit is required to submit your booking. Once approved, your final payment will be available under Approved Requests.
                   </p>
                 </form>
               </CardContent>
