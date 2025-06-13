@@ -109,7 +109,7 @@ export default function LoginPage() {
           <div className="text-center">
             <Link href="/" className="inline-block">
               <span className="text-3xl font-bold">
-                444<span className="text-red-600">exoticrentals</span>
+                444<span className="text-red-600">ExoticRentals</span>
               </span>
             </Link>
             <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Welcome Back</h2>

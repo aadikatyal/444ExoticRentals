@@ -58,7 +58,7 @@ export function Navbar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center">
           <span className="text-2xl font-bold text-black">
-            444<span className="text-red-600">exoticrentals</span>
+            444<span className="text-red-600">ExoticRentals</span>
           </span>
         </Link>
 

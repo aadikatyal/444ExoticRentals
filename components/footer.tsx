@@ -9,7 +9,7 @@ export function Footer() {
           <div>
             <div className="flex items-center mb-4">
               <span className="text-2xl font-bold text-black">
-                444<span className="text-red-600">exoticrentals</span>
+                444<span className="text-red-600">ExoticRentals</span>
               </span>
             </div>
             <p className="text-gray-600 mb-4">

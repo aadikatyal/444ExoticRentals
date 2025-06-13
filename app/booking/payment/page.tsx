@@ -295,7 +295,7 @@ export default function PaymentPage() {
                     </Button>
                       <div className="flex items-center justify-center text-xs text-gray-500 mt-2">
                         <Lock className="h-3 w-3 mr-1" />
-                        Secured by 444exoticrentals
+                        Secured by 444ExoticRentals
                       </div>
                     </div>
                 </CardContent>
