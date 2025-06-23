@@ -80,5 +80,7 @@ export async function GET(request: NextRequest) {
     await supabase.from("profiles").update({ is_admin: isAdmin }).eq("id", userId)
   }
 
+  console.log("isAdmin", isAdmin, "Redirecting to:", isAdmin ? "/admin" : redirect)
+
   return NextResponse.redirect(new URL(isAdmin ? "/admin" : redirect, requestUrl.origin))
 }
