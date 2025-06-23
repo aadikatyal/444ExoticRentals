@@ -37,40 +37,47 @@ export async function GET(request: NextRequest) {
   const adminEmails = ["aadikatyal21@gmail.com"]
   const isAdmin = adminEmails.includes(email)
 
-  const { data: profile, error: profileError } = await supabase
+  let { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, is_admin")
     .eq("id", userId)
     .maybeSingle()
 
-  if (profileError) {
-    console.error("Error fetching profile:", profileError.message)
-  }
-
   if (!profile) {
-    const { error: insertError } = await supabase.from("profiles").insert({
-      id: userId,
-      email,
-      onboarded: false,
-      is_admin: isAdmin,
-    })
+    // Try to match by email
+    const { data: emailMatch } = await supabase
+      .from("profiles")
+      .select("id, is_admin")
+      .eq("email", email)
+      .maybeSingle()
 
-    if (insertError) {
-      console.error("Insert error:", insertError.message)
+    if (emailMatch) {
+      // Update profile ID to match this new session
+      await supabase
+        .from("profiles")
+        .update({ id: userId })
+        .eq("email", email)
+
+      profile = emailMatch
+    } else {
+      // Insert new
+      const { error: insertError } = await supabase.from("profiles").insert({
+        id: userId,
+        email,
+        onboarded: false,
+        is_admin: isAdmin,
+      })
+      if (insertError) {
+        console.error("Insert error:", insertError.message)
+      }
+
+      return NextResponse.redirect(new URL(`/onboarding?redirect=${redirect}`, requestUrl.origin))
     }
-
-    return NextResponse.redirect(new URL(`/onboarding?redirect=${redirect}`, requestUrl.origin))
   }
 
+  // Make sure is_admin stays up to date
   if (profile.is_admin !== isAdmin) {
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({ is_admin: isAdmin })
-      .eq("id", userId)
-
-    if (updateError) {
-      console.error("Failed to update is_admin:", updateError.message)
-    }
+    await supabase.from("profiles").update({ is_admin: isAdmin }).eq("id", userId)
   }
 
   return NextResponse.redirect(new URL(isAdmin ? "/admin" : redirect, requestUrl.origin))
