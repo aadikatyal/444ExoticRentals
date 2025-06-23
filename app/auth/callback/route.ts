@@ -6,7 +6,8 @@ import type { NextRequest } from "next/server"
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get("code")
-  let redirect = requestUrl.searchParams.get("redirect") || "/account"
+  const redirectParam = requestUrl.searchParams.get("redirect")
+  let redirect = "/account"
 
   if (!code) {
     return NextResponse.redirect(new URL(redirect, requestUrl.origin))
@@ -91,6 +92,8 @@ export async function GET(request: NextRequest) {
 
   if (profile?.is_admin) {
     redirect = "/admin"
+  } else if (redirectParam && redirectParam !== "/") {
+    redirect = redirectParam
   }
 
   console.log("isAdmin", isAdmin, "Redirecting to:", isAdmin ? "/admin" : redirect)
