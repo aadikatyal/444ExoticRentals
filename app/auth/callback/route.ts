@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
 
   if (profile?.is_admin) {
     redirect = "/admin"
-  } else if (redirectParam && redirectParam !== "/") {
+  } else if (redirectParam) {
     redirect = redirectParam
   }
 
