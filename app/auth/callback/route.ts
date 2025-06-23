@@ -78,6 +78,15 @@ export async function GET(request: NextRequest) {
   // Make sure is_admin stays up to date
   if (profile.is_admin !== isAdmin) {
     await supabase.from("profiles").update({ is_admin: isAdmin }).eq("id", userId)
+  
+    // Force-refresh profile after update
+    const { data: updatedProfile } = await supabase
+      .from("profiles")
+      .select("id, is_admin")
+      .eq("id", userId)
+      .single()
+  
+    profile = updatedProfile
   }
 
   console.log("isAdmin", isAdmin, "Redirecting to:", isAdmin ? "/admin" : redirect)
