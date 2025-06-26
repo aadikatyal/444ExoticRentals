@@ -71,7 +71,7 @@ export default function PhotoshootsPage() {
                         <SelectContent>
                           <SelectItem value="all">All Locations</SelectItem>
                           <SelectItem value="Miami">Miami</SelectItem>
-                          <SelectItem value="atlanta">Atlanta</SelectItem>
+                          <SelectItem value="Atlanta">Atlanta</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

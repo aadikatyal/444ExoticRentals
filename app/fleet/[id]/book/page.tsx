@@ -231,7 +231,7 @@ export default function BookingPage() {
                     <h2 className="text-2xl font-bold">{car.name || `${car.make} ${car.model}`}</h2>
                     <div className="flex items-center text-gray-600 mt-1">
                       <MapPin className="h-4 w-4 mr-1 text-red-600" />
-                      <span>{car.location}</span>
+                      <span>{car.location?.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}</span>
                     </div>
                   </div>
                   <div className="mt-4 md:mt-0">
@@ -354,7 +354,9 @@ export default function BookingPage() {
                               {loc}
                             </option>
                           ))
-                        : <option value={car.location}>{car.location}</option>}
+                        : <option value={car.location}>
+                            {car.location?.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+                          </option>}
                     </select>
                   </div>
 

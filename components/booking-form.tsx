@@ -53,9 +53,9 @@ export function BookingForm() {
             <SelectValue placeholder="Select location" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Locations</SelectItem>
-            <SelectItem value="miami">Miami</SelectItem>
-            <SelectItem value="atlanta">Atlanta</SelectItem>
+            <SelectItem value="All">All Locations</SelectItem>
+            <SelectItem value="Miami">Miami</SelectItem>
+            <SelectItem value="Atlanta">Atlanta</SelectItem>
           </SelectContent>
         </Select>
       </div>
