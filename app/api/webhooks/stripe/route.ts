@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createClient } from "@supabase/supabase-js"
+import twilio from "twilio"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil" as any,
@@ -9,6 +10,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const twilioClient = twilio(
+  process.env.TWILIO_ACCOUNT_SID!,
+  process.env.TWILIO_AUTH_TOKEN!
 )
 
 export async function POST(req: NextRequest) {
@@ -105,6 +111,15 @@ export async function POST(req: NextRequest) {
         }
 
         console.log("✅ Deposit booking inserted")
+        const shortId = metadata.booking_key?.slice(-4) || "XXXX"
+
+        await twilioClient.messages.create({
+          body: `🚗 New ${metadata.booking_type} booking request from ${metadata.start_date} to ${metadata.end_date} at ${metadata.location}.
+          Reply YES${shortId} to approve or NO${shortId} to reject.`,
+          from: process.env.TWILIO_PHONE_NUMBER!,
+          to: process.env.ADMIN_PHONE_NUMBER!,
+        })
+
         return NextResponse.json({ message: "Booking created" }, { status: 200 })
       }
 
