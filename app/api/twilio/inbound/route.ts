@@ -8,11 +8,11 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
-  const messageBody = (formData.get("Body") as string || "").toUpperCase().trim()
+  const messageBody = (formData.get("Body") as string || "").trim().toLowerCase()
 
   console.log("📨 Incoming SMS:", messageBody)
 
-  const match = messageBody.match(/^(YES|NO)(\w{4})$/)
+  const match = messageBody.match(/^(yes|no)(\w{4,})$/)
   if (!match) {
     console.log("⚠️ Invalid message format")
     return new Response(
