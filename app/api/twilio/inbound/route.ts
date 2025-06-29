@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   const { data: booking, error } = await supabase
     .from("bookings")
     .select("id")
-    .ilike("booking_key", `%${shortId}`)
+    .ilike("booking_key", `%${shortId.toLowerCase()}`)
     .order("created_at", { ascending: false })
     .limit(1)
     .single()
