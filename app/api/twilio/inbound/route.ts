@@ -29,11 +29,11 @@ export async function POST(req: NextRequest) {
   const { data: booking, error } = await supabase
     .from("bookings")
     .select("id")
-    .filter("booking_key::text", "ilike", `%${shortId.toLowerCase()}`)
+    .eq("booking_code", shortId.toLowerCase())
     .order("created_at", { ascending: false })
     .limit(1)
     .single()
-
+    
   if (error || !booking) {
     console.error("❌ Booking not found for shortId:", shortId)
     return new Response(
