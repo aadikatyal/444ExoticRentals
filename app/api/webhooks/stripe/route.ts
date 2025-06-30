@@ -93,7 +93,8 @@ export async function POST(req: NextRequest) {
       
         const { error } = await supabase.from("bookings").insert([
           {
-            booking_key: fullBookingKey,
+            booking_key: metadata.booking_key,
+            booking_code: metadata.booking_key.slice(-4).toLowerCase(),
             car_id: metadata.car_id,
             user_id: metadata.user_id,
             start_date: metadata.start_date,
