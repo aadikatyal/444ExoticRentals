@@ -31,6 +31,11 @@ export async function POST(req: Request) {
 
     console.log("📦 Creating final payment Stripe session with metadata:", metadata)
 
+    const baseUrl =
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:3000"
+        : process.env.NEXT_PUBLIC_SITE_URL
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
@@ -49,8 +54,8 @@ export async function POST(req: Request) {
         },
       ],
       metadata,
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account?tab=confirmed`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account?tab=approved`,
+      success_url: `${baseUrl}/account?tab=confirmed`,
+      cancel_url: `${baseUrl}/account?tab=approved`,
     })
 
     if (!session.url) {

@@ -7,6 +7,15 @@ import { Separator } from "@/components/ui/separator"
 import { MapPin, Gauge, Zap, Timer, CheckCircle2 } from "lucide-react"
 import { useCars } from "@/contexts/car-context"
 import { useUser } from "@/contexts/user-context"
+import { useKeenSlider } from "keen-slider/react"
+import "keen-slider/keen-slider.min.css"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 export function CarDetailModal() {
   const { selectedCar, setSelectedCar } = useCars()
@@ -22,23 +31,37 @@ export function CarDetailModal() {
     setSelectedCar(null)
   }
 
+  const [sliderRef] = useKeenSlider<HTMLDivElement>({
+    loop: true,
+    mode: "snap",
+  })
+
   return (
     <Dialog open={!!selectedCar} onOpenChange={(open) => !open && setSelectedCar(null)}>
       <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden">
         {selectedCar && (
           <>
-            <div className="relative h-64 w-full">
-              <Image
-                src={
-                  Array.isArray(selectedCar.image_urls) && selectedCar.image_urls.length > 0
-                    ? selectedCar.image_urls[0]
-                    : "/placeholder.svg?height=400&width=800"
-                }
-                alt={selectedCar.name || "Luxury car"}
-                fill
-                className="object-cover"
-              />
-              <div className="absolute top-4 right-4 bg-red-600 text-white font-bold py-1 px-3 rounded-full">
+            <div className="relative w-full h-64">
+              <Carousel className="w-full h-full">
+                <CarouselContent>
+                  {(selectedCar.image_urls || []).map((url, index) => (
+                    <CarouselItem key={index}>
+                      <div className="relative h-64 w-full">
+                        <Image
+                          src={url}
+                          alt={`Car image ${index + 1}`}
+                          fill
+                          className="object-cover rounded-t-lg"
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-4 z-10 bg-white/70 hover:bg-white transition" />
+                <CarouselNext className="right-4 z-10 bg-white/70 hover:bg-white transition" />
+              </Carousel>
+
+              <div className="absolute top-4 right-4 bg-red-600 text-white font-bold py-1 px-3 rounded-full z-20">
                 ${selectedCar.price_per_day}/day
               </div>
             </div>
