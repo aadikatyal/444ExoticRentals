@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
             user_id: metadata.user_id,
             start_date: metadata.start_date,
             end_date: metadata.end_date,
-            pickup_location: metadata.location?.charAt(0).toUpperCase() + metadata.location?.slice(1),
+            pickup_location: metadata.location?.charAt(0).toUpperCase() + metadata.location?.slice(1).toLowerCase(),
             total_price: parseFloat(metadata.total_price || "0"),
             booking_type: metadata.booking_type,
             hours: metadata.hours ? parseInt(metadata.hours) : null,
@@ -115,8 +115,10 @@ export async function POST(req: NextRequest) {
 
         console.log("📞 ADMIN_PHONE_NUMBER =", process.env.ADMIN_PHONE_NUMBER)
 
+        const location = metadata.location?.charAt(0).toUpperCase() + metadata.location?.slice(1)
+
         await twilioClient.messages.create({
-          body: `🚗 New ${metadata.booking_type} booking request from ${metadata.start_date} to ${metadata.end_date} at ${metadata.location}.
+          body: `🚗 New ${metadata.booking_type} booking request from ${metadata.start_date} to ${metadata.end_date} at ${location}.
           Reply YES${shortId} to approve or NO${shortId} to reject.`,
           from: process.env.TWILIO_PHONE_NUMBER!,
           to: process.env.ADMIN_PHONE_NUMBER!,
