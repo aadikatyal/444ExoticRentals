@@ -64,38 +64,41 @@ export async function POST(req: NextRequest) {
       // 2. Deposit Payment Flow
       else if (metadata?.type === "deposit") {
         const requiredFields = [
-          "booking_key", "user_id", "car_id",
-          "start_date", "end_date", "total_price"
+          "user_id", "car_id", "start_date", "end_date", "total_price"
         ]
         const missing = requiredFields.filter(field => !metadata[field])
         if (missing.length > 0) {
           console.error("❌ Missing required metadata for deposit:", missing)
           return NextResponse.json({ error: "Missing required metadata" }, { status: 400 })
         }
-
+      
+        // Generate a booking key if missing
+        const fullBookingKey = metadata.booking_key || crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase()
+      
+        // Check for duplicates
         const { data: existing, error: checkError } = await supabase
           .from("bookings")
           .select("id")
-          .eq("booking_key", metadata.booking_key)
-
+          .eq("booking_key", fullBookingKey)
+      
         if (checkError) {
           console.error("❌ Failed to check for existing booking:", checkError)
           return NextResponse.json({ error: "Check error" }, { status: 500 })
         }
-
+      
         if (existing && existing.length > 0) {
           console.log("⚠️ Booking already exists. Skipping insert.")
           return NextResponse.json({ message: "Booking already exists" }, { status: 200 })
         }
-
+      
         const { error } = await supabase.from("bookings").insert([
           {
-            booking_key: metadata.booking_key,
+            booking_key: fullBookingKey,
             car_id: metadata.car_id,
             user_id: metadata.user_id,
             start_date: metadata.start_date,
             end_date: metadata.end_date,
-            pickup_location: metadata.location?.charAt(0).toUpperCase() + metadata.location?.slice(1).toLowerCase(),
+            pickup_location: metadata.location,
             total_price: parseFloat(metadata.total_price || "0"),
             booking_type: metadata.booking_type,
             hours: metadata.hours ? parseInt(metadata.hours) : null,
@@ -104,26 +107,21 @@ export async function POST(req: NextRequest) {
             status: "pending",
           },
         ])
-
+      
         if (error) {
           console.error("❌ Failed to insert booking:", error)
           return NextResponse.json({ error: "Insert failed" }, { status: 500 })
         }
-
-        console.log("✅ Deposit booking inserted")
-        const shortId = metadata.booking_key?.slice(-4) || "XXXX"
-
-        console.log("📞 ADMIN_PHONE_NUMBER =", process.env.ADMIN_PHONE_NUMBER)
-
-        const location = metadata.location?.charAt(0).toUpperCase() + metadata.location?.slice(1)
-
+      
+        const shortId = fullBookingKey.slice(-4)
+      
         await twilioClient.messages.create({
-          body: `🚗 New ${metadata.booking_type} booking request from ${metadata.start_date} to ${metadata.end_date} at ${location}.
-          Reply YES${shortId} to approve or NO${shortId} to reject.`,
+          body: `🚗 New ${metadata.booking_type} booking from ${metadata.start_date} to ${metadata.end_date} at ${metadata.location}.
+      Reply YES${shortId} to approve or NO${shortId} to reject.`,
           from: process.env.TWILIO_PHONE_NUMBER!,
           to: process.env.ADMIN_PHONE_NUMBER!,
         })
-
+      
         return NextResponse.json({ message: "Booking created" }, { status: 200 })
       }
 
