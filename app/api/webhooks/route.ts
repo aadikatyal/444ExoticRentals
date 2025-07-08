@@ -90,6 +90,8 @@ export async function POST(req: NextRequest) {
           console.log("⚠️ Booking already exists. Skipping insert.")
           return NextResponse.json({ message: "Booking already exists" }, { status: 200 })
         }
+
+        console.log("📌 Insert block sees times:", metadata.start_time, metadata.end_time)
       
         const { error } = await supabase.from("bookings").insert([
           {
@@ -99,6 +101,8 @@ export async function POST(req: NextRequest) {
             user_id: metadata.user_id,
             start_date: metadata.start_date,
             end_date: metadata.end_date,
+            start_time: "17:00",
+            end_time: metadata.end_time?.trim() || null,
             pickup_location: metadata.location,
             total_price: parseFloat(metadata.total_price || "0"),
             booking_type: metadata.booking_type,

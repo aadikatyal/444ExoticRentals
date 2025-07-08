@@ -15,6 +15,8 @@ export async function POST(req: Request) {
       carId,
       startDate,
       endDate,
+      startTime,
+      endTime,
       location,
       totalPrice,
       bookingType,
@@ -53,6 +55,8 @@ export async function POST(req: Request) {
       car_id: carId || "",
       start_date: startDate || "",
       end_date: endDate || "",
+      start_time: startTime || "",
+      end_time: endTime || "",
       location: location || "",
       total_price: totalPrice?.toString() || "0",
       booking_type: bookingType || "",
@@ -67,6 +71,7 @@ export async function POST(req: Request) {
       payment_method_types: ["card"],
       mode: "payment",
       customer_email: user.email,
+      allow_promotion_codes: true,
       line_items: [
         {
           price_data: {

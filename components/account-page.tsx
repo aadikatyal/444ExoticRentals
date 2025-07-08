@@ -92,9 +92,9 @@ export default function AccountPage() {
     const endDate = new Date(end)
     const endDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
   
-    if (today < startDay) return ["Upcoming", "bg-blue-100 text-blue-800"]
-    if (today >= startDay && today <= endDay) return ["In Progress", "bg-yellow-100 text-yellow-800"]
-    return ["Confirmed", "bg-gray-200 text-gray-800"]
+    if (today < startDay) return ["Upcoming", "bg-blue-100 text-blue-800"];
+    if (today >= startDay && today <= endDay) return ["In Progress", "bg-yellow-100 text-yellow-800"];
+    return ["Completed", "bg-gray-200 text-gray-800"];
   }
 
   const handlePay = async (booking) => {

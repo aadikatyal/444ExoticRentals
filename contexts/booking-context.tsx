@@ -28,6 +28,9 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const { user } = useUser()
   const supabase = createClient()
 
+  const [startTime, setStartTime] = useState("13:00")
+  const [endTime, setEndTime] = useState("11:00")
+
   useEffect(() => {
     if (user) {
       refreshBookings()
@@ -80,6 +83,8 @@ export function BookingProvider({ children }: { children: ReactNode }) {
           carId,
           startDate,
           endDate,
+          startTime,
+          endTime,
           location,
           totalPrice,
           bookingType,

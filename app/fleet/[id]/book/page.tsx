@@ -43,6 +43,9 @@ export default function BookingPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState("")
 
+  const [startTime, setStartTime] = useState("13:00")
+  const [endTime, setEndTime] = useState("11:00")
+
   useEffect(() => {
     const urlStartDate = searchParams.get("startDate")
     const urlEndDate = searchParams.get("endDate")
@@ -132,6 +135,8 @@ export default function BookingPage() {
           carId: car.id,
           startDate: bookingType === "rental" ? startDate : photoshootDate,
           endDate: bookingType === "rental" ? endDate : photoshootDate,
+          startTime,
+          endTime,
           location: pickupLocation,
           totalPrice,
           bookingType,
@@ -139,7 +144,7 @@ export default function BookingPage() {
           depositAmount: bookingType === "photoshoot" ? 500 : 1500,
         }),
       })
-
+      
       if (!res.ok) {
         throw new Error("Failed to initiate deposit payment")
       }
@@ -312,11 +317,44 @@ export default function BookingPage() {
 
                   {bookingType === "rental" ? (
                     <div className="space-y-2">
-                      <Label>Pickup Date</Label>
-                      <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
-                      <Label>Return Date</Label>
-                      <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+                    {/* Pickup Date & Time */}
+                    <Label htmlFor="pickup-date">Pickup Date</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        id="pickup-date"
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        required
+                      />
+                      <Input
+                        id="pickup-time"
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        required
+                      />
                     </div>
+                  
+                    {/* Return Date & Time */}
+                    <Label htmlFor="return-date">Return Date</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        id="return-date"
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        required
+                      />
+                      <Input
+                        id="return-time"
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
                   ) : (
                     <div className="space-y-2">
                       <Label>Photoshoot Date</Label>
