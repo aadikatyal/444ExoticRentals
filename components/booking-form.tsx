@@ -21,6 +21,8 @@ export function BookingForm() {
   const [endDate, setEndDate] = useState("")
   const router = useRouter()
   const { setFilters } = useCars()
+  const [startTime, setStartTime] = useState("12:00")
+  const [endTime, setEndTime] = useState("12:00")
 
   useEffect(() => {
     if (!startDate) {
@@ -63,40 +65,48 @@ export function BookingForm() {
       {/* Start Date */}
       <div>
         <Label htmlFor="start-date" className="text-sm font-medium mb-1 block">
-          Start Date
+          Start Date & Time
         </Label>
-        <div className="relative">
+        <div className="flex gap-2">
           <Input
             id="start-date"
             type="date"
-            className="h-12 pl-3 md:pl-11 pr-3"
+            className="h-12"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
           />
-          <div className="hidden md:block absolute left-3 top-1/2 -translate-y-1/2">
-            <Calendar className="h-5 w-5 text-gray-400 pointer-events-none" />
-          </div>
+          <Input
+            id="start-time"
+            type="time"
+            className="h-12"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+          />
         </div>
       </div>
 
       {/* End Date */}
       <div>
         <Label htmlFor="end-date" className="text-sm font-medium mb-1 block">
-          End Date
+          End Date & Time
         </Label>
-        <div className="relative">
+        <div className="flex gap-2">
           <Input
             id="end-date"
             type="date"
-            className="h-12 pl-3 md:pl-11 pr-3"
+            className="h-12"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             min={startDate || new Date().toISOString().split("T")[0]}
           />
-          <div className="hidden md:block absolute left-3 top-1/2 -translate-y-1/2">
-            <Calendar className="h-5 w-5 text-gray-400 pointer-events-none" />
-          </div>
+          <Input
+            id="end-time"
+            type="time"
+            className="h-12"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+          />
         </div>
       </div>
 

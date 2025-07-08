@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get("code")
   const redirectParam = requestUrl.searchParams.get("redirect")
-  let redirect = "/account"
+  let redirect = redirectParam || "/account"
 
   if (!code) {
     return NextResponse.redirect(new URL(redirect, requestUrl.origin))
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
         console.error("Insert error:", insertError.message)
       }
 
-      return NextResponse.redirect(new URL(`/onboarding?redirect=${redirect}`, requestUrl.origin))
+      return NextResponse.redirect(new URL(`/onboarding?redirect=${redirectParam || "/account"}`, requestUrl.origin))
     }
   }
 
