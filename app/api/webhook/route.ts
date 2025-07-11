@@ -74,34 +74,34 @@ export async function POST(req: NextRequest) {
       
         // Generate a booking key if missing
         const fullBookingKey = metadata.booking_key || crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase()
-      
+
         // Check for duplicates
         const { data: existing, error: checkError } = await supabase
           .from("bookings")
           .select("id")
           .eq("booking_key", fullBookingKey)
-      
+
         if (checkError) {
           console.error("❌ Failed to check for existing booking:", checkError)
           return NextResponse.json({ error: "Check error" }, { status: 500 })
         }
-      
+
         if (existing && existing.length > 0) {
           console.log("⚠️ Booking already exists. Skipping insert.")
           return NextResponse.json({ message: "Booking already exists" }, { status: 200 })
         }
 
         console.log("📌 Insert block sees times:", metadata.start_time, metadata.end_time)
-      
+
         const { error } = await supabase.from("bookings").insert([
           {
-            booking_key: metadata.booking_key,
-            booking_code: metadata.booking_key.slice(-4).toLowerCase(),
+            booking_key: fullBookingKey,
+            booking_code: fullBookingKey.slice(-4).toLowerCase(),
             car_id: metadata.car_id,
             user_id: metadata.user_id,
             start_date: metadata.start_date,
             end_date: metadata.end_date,
-            start_time: "17:00",
+            start_time: metadata.start_time || "17:00",
             end_time: metadata.end_time?.trim() || null,
             pickup_location: metadata.location,
             total_price: parseFloat(metadata.total_price || "0"),
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
             status: "pending",
           },
         ])
-      
+
         if (error) {
           console.error("❌ Failed to insert booking:", error)
           return NextResponse.json({ error: "Insert failed" }, { status: 500 })
@@ -148,4 +148,8 @@ export async function POST(req: NextRequest) {
   
     return new NextResponse("Webhook error", { status: 400 })
   }
+}
+
+export const config = {
+  runtime: "nodejs",
 }

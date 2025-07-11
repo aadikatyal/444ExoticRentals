@@ -74,19 +74,33 @@ export default function BookingConfirmationPage() {
   }
 
   if (error || !booking || !car) {
+    const message = error?.includes("Booking") || !booking
+      ? {
+          title: "Booking Not Found",
+          description: "We couldn't find your booking. It may have expired or been removed.",
+          button: "Return Home",
+          action: () => router.push("/"),
+        }
+      : {
+          title: "Car Not Found",
+          description: "The car you're looking for doesn't exist or has been removed.",
+          button: "Browse Our Fleet",
+          action: () => router.push("/fleet"),
+        }
+  
     return (
       <div className="min-h-screen flex flex-col bg-white">
         <Navbar />
         <div className="flex-1 flex items-center justify-center pt-20">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-600 mx-auto" />
-            <h2 className="mt-4 text-xl font-bold">Car Not Found</h2>
-            <p className="mt-2 text-gray-600">The car you're looking for doesn't exist or has been removed.</p>
+            <h2 className="mt-4 text-xl font-bold">{message.title}</h2>
+            <p className="mt-2 text-gray-600">{message.description}</p>
             <button
               className="mt-6 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-              onClick={() => router.push("/fleet")}
+              onClick={message.action}
             >
-              Browse Our Fleet
+              {message.button}
             </button>
           </div>
         </div>
