@@ -7,9 +7,14 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get("code")
   const redirectParam = requestUrl.searchParams.get("redirect")
-let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
+  let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
+
+  console.log("📦 Incoming redirectParam:", redirectParam)
+  console.log("🌐 Full request URL:", requestUrl.toString())
+  console.log("🧭 All search params:", Array.from(requestUrl.searchParams.entries()))
 
   if (!code) {
+    console.warn("⚠️ No code in URL, redirecting immediately to:", redirect)
     return NextResponse.redirect(new URL(redirect, requestUrl.origin))
   }
 
@@ -21,8 +26,10 @@ let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
     error: sessionError,
   } = await supabase.auth.exchangeCodeForSession(code)
 
+  console.log("📬 Session after code exchange:", session)
+
   if (sessionError || !session) {
-    console.error("Error exchanging code for session:", sessionError?.message)
+    console.error("❌ Error exchanging code for session:", sessionError?.message)
     return NextResponse.redirect(new URL("/login", requestUrl.origin))
   }
 
@@ -30,8 +37,10 @@ let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
   const email = user.email
   const userId = user.id
 
+  console.log("🧑 User:", { id: userId, email })
+
   if (!email || !userId) {
-    console.error("Missing user info from session")
+    console.error("❌ Missing user info from session")
     return NextResponse.redirect(new URL("/login", requestUrl.origin))
   }
 
@@ -44,6 +53,8 @@ let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
     .eq("id", userId)
     .maybeSingle()
 
+  console.log("📄 Profile from Supabase:", profile)
+
   if (!profile) {
     // Try to match by email
     const { data: emailMatch } = await supabase
@@ -53,7 +64,7 @@ let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
       .maybeSingle()
 
     if (emailMatch) {
-      // Update profile ID to match this new session
+      console.log("🔄 Found profile by email, updating ID...")
       await supabase
         .from("profiles")
         .update({ id: userId })
@@ -61,7 +72,7 @@ let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
 
       profile = emailMatch
     } else {
-      // Insert new
+      console.log("🆕 Inserting new profile...")
       const { error: insertError } = await supabase.from("profiles").insert({
         id: userId,
         email,
@@ -69,34 +80,36 @@ let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
         is_admin: isAdmin,
       })
       if (insertError) {
-        console.error("Insert error:", insertError.message)
+        console.error("❌ Insert error:", insertError.message)
       }
 
-      return NextResponse.redirect(new URL(`/onboarding?redirect=${redirectParam || "/account"}`, requestUrl.origin))
+      return NextResponse.redirect(
+        new URL(`/onboarding?redirect=${redirectParam || "/account"}`, requestUrl.origin)
+      )
     }
   }
 
   // Make sure is_admin stays up to date
   if (profile.is_admin !== isAdmin) {
+    console.log("🔧 Updating is_admin to match config")
     await supabase.from("profiles").update({ is_admin: isAdmin }).eq("id", userId)
-  
-    // Force-refresh profile after update
+
     const { data: updatedProfile } = await supabase
       .from("profiles")
       .select("id, is_admin")
       .eq("id", userId)
       .single()
-  
+
     profile = updatedProfile
   }
 
   redirect = profile?.is_admin
-  ? "/admin"
-  : redirectParam
+    ? "/admin"
+    : redirectParam
     ? decodeURIComponent(redirectParam)
     : "/account"
 
-  console.log("isAdmin", isAdmin, "Redirecting to:", isAdmin ? "/admin" : redirect)
+  console.log("✅ Final redirect target:", redirect)
 
   return NextResponse.redirect(new URL(redirect, requestUrl.origin))
 }
