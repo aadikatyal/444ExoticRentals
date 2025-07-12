@@ -90,11 +90,11 @@ let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
     profile = updatedProfile
   }
 
-  if (profile?.is_admin) {
-    redirect = "/admin"
-  } else if (redirectParam) {
-    redirect = redirectParam
-  }
+  redirect = profile?.is_admin
+  ? "/admin"
+  : redirectParam
+    ? decodeURIComponent(redirectParam)
+    : "/account"
 
   console.log("isAdmin", isAdmin, "Redirecting to:", isAdmin ? "/admin" : redirect)
 
