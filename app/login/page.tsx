@@ -84,19 +84,25 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsLoading(true)
     setError("")
-
-    console.log("ENV redirectTo:", `${window.location.origin}/auth/callback?redirect=${redirectTo}`)
-
+  
+    const encodedRedirect = encodeURIComponent(redirectTo)
+    const fullRedirectTo = `${window.location.origin}/auth/callback?redirect=${encodedRedirect}`
+  
+    console.log("🟢 Starting Google OAuth")
+    console.log("🌐 Current redirectTo param:", redirectTo)
+    console.log("🔁 Final OAuth redirectTo URL:", fullRedirectTo)
+  
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect=${redirectTo}`,
+          redirectTo: fullRedirectTo,
         },
       })
-
+  
       if (error) throw error
     } catch (error: any) {
+      console.error("❌ Google login error:", error.message)
       setError(error.message || "An error occurred during Google login")
       setIsLoading(false)
     }
