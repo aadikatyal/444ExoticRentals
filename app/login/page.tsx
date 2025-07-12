@@ -85,6 +85,8 @@ export default function LoginPage() {
     setIsLoading(true)
     setError("")
 
+    console.log("ENV redirectTo:", `${window.location.origin}/auth/callback?redirect=${redirectTo}`)
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
