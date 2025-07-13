@@ -104,7 +104,7 @@ export default function BookingPage() {
       setTotalDays(diffDays || 1)
       setTotalPrice(diffDays * car.price_per_day || car.price_per_day)
     } else if (bookingType === "photoshoot") {
-      setTotalPrice(hours * (car.price_per_hour || 250))
+      setTotalPrice(hours * (car.price_per_hour || 500))
     }
   }, [bookingType, startDate, endDate, hours, car])
 
@@ -241,7 +241,7 @@ export default function BookingPage() {
                   </div>
                   <div className="mt-4 md:mt-0">
                     <span className="text-2xl font-bold text-red-600">
-                      ${bookingType === "rental" ? car.price_per_day : car.price_per_hour || 250}
+                      ${bookingType === "rental" ? car.price_per_day : car.price_per_hour || 500}
                     </span>
                     <span className="text-gray-600"> / {bookingType === "rental" ? "day" : "hour"}</span>
                   </div>

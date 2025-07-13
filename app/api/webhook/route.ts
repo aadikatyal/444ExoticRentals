@@ -72,8 +72,8 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: "Missing required metadata" }, { status: 400 })
         }
       
-        // Generate a booking key if missing
-        const fullBookingKey = metadata.booking_key || crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase()
+        // Use the exact booking key generated during checkout to avoid mismatches
+        const fullBookingKey = metadata.booking_key
 
         // Check for duplicates
         const { data: existing, error: checkError } = await supabase
@@ -152,4 +152,5 @@ export async function POST(req: NextRequest) {
 
 export const config = {
   runtime: "nodejs",
+  dynamic: "force-dynamic",
 }
