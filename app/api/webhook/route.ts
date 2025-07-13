@@ -18,12 +18,12 @@ const twilioClient = twilio(
 )
 
 export async function POST(req: NextRequest) {
-  const body = await req.text()
+  const rawBody = await new Response(req.body).text()
   const sig = req.headers.get("stripe-signature") as string
 
   try {
     const event = stripe.webhooks.constructEvent(
-      body,
+      rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
