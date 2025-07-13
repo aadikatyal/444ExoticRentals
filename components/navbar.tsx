@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { User, Menu, LogOut } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
-import { SheetTitle } from "@/components/ui/sheet"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -29,7 +29,7 @@ export function Navbar() {
 
     checkUser()
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null)
     })
 
@@ -56,12 +56,15 @@ export function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center">
+        {/* Logo with image and text */}
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/images/car.png" alt="Logo" width={70} height={70} />
           <span className="text-2xl font-bold text-black">
             444<span className="text-red-600">ExoticRentals</span>
           </span>
         </Link>
 
+        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-700">
           {navLinks.map(({ href, label }) => (
             <Link
@@ -69,9 +72,7 @@ export function Navbar() {
               href={href}
               className={cn(
                 "transition-colors px-2 py-1 rounded-md",
-                pathname === href
-                  ? "bg-red-100 text-red-600"
-                  : "hover:text-red-600"
+                pathname === href ? "bg-red-100 text-red-600" : "hover:text-red-600"
               )}
             >
               {label}
@@ -79,6 +80,7 @@ export function Navbar() {
           ))}
         </nav>
 
+        {/* Right Side */}
         <div className="flex items-center gap-4">
           {!loading && (
             <>
@@ -108,6 +110,7 @@ export function Navbar() {
             </>
           )}
 
+          {/* Mobile Nav */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden text-gray-700">

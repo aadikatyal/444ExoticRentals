@@ -9,42 +9,24 @@ export default function LocationsPage() {
   const locations = [
     {
       id: 1,
-      name: "Miami Beach",
-      address: "123 Ocean Drive, Miami Beach, FL 33139",
-      phone: "+1 (470) 886-62645",
+      name: "Nobu Atlanta",
+      address: "3520 Peachtree Rd NE, Atlanta, GA 30326",
+      phone: "+1 (470) 886-6265",
       hours: "Mon-Sat: 9AM-7PM, Sun: 10AM-5PM",
-      image: "/placeholder.svg?height=300&width=600",
+      image: "/images/nobu.jpg?height=300&width=600",
       description:
         "Our flagship location in the heart of Miami Beach, featuring our full lineup of exotic and luxury vehicles.",
     },
     {
       id: 2,
-      name: "Downtown Miami",
-      address: "456 Brickell Avenue, Miami, FL 33131",
+      name: "Brickell First Apartments",
+      address: "110 SW 12th St, Miami, FL 33130",
       phone: "+1 (470) 880-6265",
       hours: "Mon-Sat: 9AM-7PM, Sun: 10AM-5PM",
-      image: "/placeholder.svg?height=300&width=600",
+      image: "/images/brickell.jpg?height=300&width=600",
       description:
         "Conveniently located in the Brickell financial district, offering easy access to our premium fleet.",
-    },
-    {
-      id: 3,
-      name: "Fort Lauderdale",
-      address: "789 Las Olas Blvd, Fort Lauderdale, FL 33301",
-      phone: "+1 (954) 555-9012",
-      hours: "Mon-Sat: 9AM-7PM, Sun: 10AM-5PM",
-      image: "/placeholder.svg?height=300&width=600",
-      description: "Serving the Fort Lauderdale area with a curated selection of our most popular luxury vehicles.",
-    },
-    {
-      id: 4,
-      name: "Palm Beach",
-      address: "321 Worth Avenue, Palm Beach, FL 33480",
-      phone: "+1 (561) 555-3456",
-      hours: "Mon-Sat: 9AM-7PM, Sun: 10AM-5PM",
-      image: "/placeholder.svg?height=300&width=600",
-      description: "Our Palm Beach location offers an exclusive collection of ultra-luxury and rare exotic cars.",
-    },
+    }
   ]
 
   return (
