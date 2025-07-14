@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // IMPORTANT: allows raw body for signature verification
   },
 }
 
@@ -24,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const sig = req.headers['stripe-signature'] as string
-
   let event: Stripe.Event
 
   try {
@@ -36,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     )
     console.log('✅ Stripe event constructed:', event.type)
   } catch (err: any) {
-    console.error('❌ Webhook error:', err.message)
+    console.error('❌ Webhook signature verification failed:', err.message)
     return res.status(400).send(`Webhook Error: ${err.message}`)
   }
 
@@ -44,49 +43,53 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const session = event.data.object as Stripe.Checkout.Session
     const metadata = session.metadata || {}
 
-    console.log('📦 Full session metadata:', metadata)
+    console.log('📦 Session metadata:', metadata)
 
-    const { type, booking_key } = metadata
+    const {
+      type,
+      booking_key,
+      user_id,
+      car_id,
+      start_date,
+      end_date,
+      start_time,
+      end_time,
+      location,
+      total_price,
+      booking_type,
+      hours,
+      deposit_amount,
+    } = metadata
+
+    if (!booking_key) {
+      console.error('❌ Missing booking_key')
+      return res.status(400).json({ error: 'Missing booking_key' })
+    }
 
     if (type === 'final') {
-      if (!booking_key) {
-        console.error('❌ Missing booking_key in final payment metadata')
-        return res.status(400).json({ error: 'Missing booking_key' })
-      }
-
       const { error: updateError } = await supabase
         .from('bookings')
         .update({ status: 'confirmed' })
         .eq('id', booking_key)
 
       if (updateError) {
-        console.error('❌ Failed to update booking to confirmed:', updateError)
+        console.error('❌ Failed to confirm booking:', updateError)
         return res.status(500).json({ error: 'Update failed' })
       }
 
-      console.log('✅ Booking marked as confirmed')
+      console.log('✅ Booking confirmed (final payment)')
       return res.status(200).json({ message: 'Booking confirmed' })
     }
 
     if (type === 'deposit') {
-      const {
-        booking_key,
-        user_id,
-        car_id,
-        start_date,
-        end_date,
-        start_time,
-        end_time,
-        location,
-        total_price,
-        booking_type,
-        hours,
-        deposit_amount,
-      } = metadata
+      const { data: existing } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('id', booking_key)
 
-      if (!booking_key) {
-        console.error('❌ Missing booking_key in deposit metadata')
-        return res.status(400).json({ error: 'Missing booking_key' })
+      if (existing && existing.length > 0) {
+        console.log('⚠️ Booking already exists, skipping insert.')
+        return res.status(200).json({ message: 'Booking already exists' })
       }
 
       const { error: insertError } = await supabase.from('bookings').insert([
@@ -103,18 +106,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           booking_type,
           hours: hours || null,
           deposit_amount: parseFloat(deposit_amount),
+          paid_deposit: true,
           status: 'approved',
         },
       ])
 
       if (insertError) {
-        console.error('❌ Failed to insert deposit booking:', insertError)
+        console.error('❌ Failed to insert booking:', insertError)
         return res.status(500).json({ error: 'Insert failed' })
       }
 
-      console.log('✅ Deposit booking inserted')
+      console.log('✅ Booking inserted (deposit)')
       return res.status(200).json({ message: 'Deposit booking created' })
     }
+
+    console.error('❌ Unknown metadata type:', type)
+    return res.status(400).json({ error: 'Unknown metadata type' })
   }
 
   return res.status(200).json({ received: true })
