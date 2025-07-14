@@ -17,18 +17,51 @@ const twilioClient = twilio(
   process.env.TWILIO_AUTH_TOKEN!
 )
 
+// Required for raw body (App Router doesn’t disable body parser)
+async function buffer(readable: ReadableStream<Uint8Array>) {
+  const reader = readable.getReader()
+  let chunks: Uint8Array[] = []
+  let done = false
+
+  while (!done) {
+    const { value, done: doneReading } = await reader.read()
+    if (value) chunks.push(value)
+    done = doneReading
+  }
+
+  return Buffer.concat(chunks)
+}
+
+export const config = {
+  runtime: "nodejs",
+  dynamic: "force-dynamic",
+}
+
 export async function POST(req: NextRequest) {
-  const rawBody = await new Response(req.body).text()
+  console.log("🧪 Webhook route HIT")
+
+  const rawBody = await buffer(req.body!)
   const sig = req.headers.get("stripe-signature") as string
 
+  console.log("📥 Raw body received:", rawBody.toString()) // 🧪 Add this
+  console.log("📩 Stripe-Signature header:", sig) // 🧪 Add this
+
+  let event
   try {
-    const event = stripe.webhooks.constructEvent(
+    event = stripe.webhooks.constructEvent(
       rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
+    console.log("✅ Stripe event constructed successfully") // 🧪 Add this
+  } catch (err) {
+    console.error("❌ Webhook error (message):", err instanceof Error ? err.message : err)
+    console.error("❌ Webhook error (stack):", err instanceof Error ? err.stack : "")
+    return new NextResponse("Webhook error: Invalid signature", { status: 400 })
+  }
 
-    console.log("🔔 Stripe webhook received:", event.type)
+  console.log("🔔 Stripe webhook received:", event.type)
+
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session
@@ -44,8 +77,6 @@ export async function POST(req: NextRequest) {
           console.error("❌ Missing booking_id in final payment metadata")
           return NextResponse.json({ error: "Missing booking_id" }, { status: 400 })
         }
-
-        console.log("Booking ID:", bookingId)
 
         const { error: updateError } = await supabase
           .from("bookings")
@@ -71,11 +102,9 @@ export async function POST(req: NextRequest) {
           console.error("❌ Missing required metadata for deposit:", missing)
           return NextResponse.json({ error: "Missing required metadata" }, { status: 400 })
         }
-      
-        // Use the exact booking key generated during checkout to avoid mismatches
+
         const fullBookingKey = metadata.booking_key
 
-        // Check for duplicates
         const { data: existing, error: checkError } = await supabase
           .from("bookings")
           .select("id")
@@ -90,8 +119,6 @@ export async function POST(req: NextRequest) {
           console.log("⚠️ Booking already exists. Skipping insert.")
           return NextResponse.json({ message: "Booking already exists" }, { status: 200 })
         }
-
-        console.log("📌 Insert block sees times:", metadata.start_time, metadata.end_time)
 
         const { error } = await supabase.from("bookings").insert([
           {
@@ -117,20 +144,20 @@ export async function POST(req: NextRequest) {
           console.error("❌ Failed to insert booking:", error)
           return NextResponse.json({ error: "Insert failed" }, { status: 500 })
         }
-      
+
         const shortId = fullBookingKey.slice(-4)
-      
+
         await twilioClient.messages.create({
           body: `🚗 New ${metadata.booking_type} booking from ${metadata.start_date} to ${metadata.end_date} at ${metadata.location}.
-      Reply YES${shortId} to approve or NO${shortId} to reject.`,
+Reply YES${shortId} to approve or NO${shortId} to reject.`,
           from: process.env.TWILIO_PHONE_NUMBER!,
           to: process.env.ADMIN_PHONE_NUMBER!,
         })
-      
+
         return NextResponse.json({ message: "Booking created" }, { status: 200 })
       }
 
-      // 3. Unrecognized metadata type
+      // 3. Unknown metadata type
       else {
         console.error("❌ Unknown metadata type or missing type field:", metadata)
         return NextResponse.json({ error: "Unknown metadata type" }, { status: 400 })
@@ -145,12 +172,7 @@ export async function POST(req: NextRequest) {
     } else {
       console.error("❌ Webhook error (raw):", err)
     }
-  
+
     return new NextResponse("Webhook error", { status: 400 })
   }
-}
-
-export const config = {
-  runtime: "nodejs",
-  dynamic: "force-dynamic",
 }
