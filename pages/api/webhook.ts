@@ -5,9 +5,11 @@ import { createClient } from '@supabase/supabase-js'
 
 export const config = {
   api: {
-    bodyParser: false, // IMPORTANT: allows raw body for signature verification
+    bodyParser: false, // allows raw body for signature verification
   },
 }
+
+export const runtime = 'nodejs' // 🚨 REQUIRED for Vercel to disable Edge runtime
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-08-01',
