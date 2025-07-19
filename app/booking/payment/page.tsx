@@ -104,7 +104,7 @@ export default function PaymentPage() {
           carId: booking.car_id,
           startDate: booking.start_date,
           endDate: booking.end_date,
-          location: booking.pickup_location || "N/A",
+          location: booking.location || "N/A",
           totalPrice: booking.total_price,
           bookingType: booking.booking_type || "rental",
           hours: booking.hours || null,

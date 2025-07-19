@@ -5,11 +5,11 @@ import { createClient } from '@supabase/supabase-js'
 
 export const config = {
   api: {
-    bodyParser: false, // allows raw body for signature verification
+    bodyParser: false,
   },
 }
 
-export const runtime = 'nodejs' // 🚨 REQUIRED for Vercel to disable Edge runtime
+export const runtime = 'nodejs'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-08-01',
@@ -21,13 +21,16 @@ const supabase = createClient(
 )
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('🚀 Webhook handler started')
+
   if (req.method !== 'POST') {
+    console.warn('⚠️ Invalid method:', req.method)
     return res.status(405).send('Method Not Allowed')
   }
 
   const sig = req.headers['stripe-signature'] as string
-  let event: Stripe.Event
 
+  let event: Stripe.Event
   try {
     const rawBody = await buffer(req)
     event = stripe.webhooks.constructEvent(
@@ -35,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
-    console.log('✅ Stripe event constructed:', event.type)
+    console.log('✅ Stripe event constructed successfully:', event.type)
   } catch (err: any) {
     console.error('❌ Webhook signature verification failed:', err.message)
     return res.status(400).send(`Webhook Error: ${err.message}`)
@@ -44,12 +47,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const metadata = session.metadata || {}
-
     console.log('📦 Session metadata:', metadata)
 
     const {
       type,
-      booking_key,
+      booking_id,
       user_id,
       car_id,
       start_date,
@@ -63,62 +65,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       deposit_amount,
     } = metadata
 
-    if (!booking_key) {
-      console.error('❌ Missing booking_key')
-      return res.status(400).json({ error: 'Missing booking_key' })
+    if (!booking_id) {
+      console.error('❌ Missing booking_id in metadata')
+      return res.status(400).json({ error: 'Missing booking_id' })
     }
 
+    // Final payment
     if (type === 'final') {
       const { error: updateError } = await supabase
         .from('bookings')
         .update({ status: 'confirmed' })
-        .eq('id', booking_key)
+        .eq('id', booking_id)
 
       if (updateError) {
         console.error('❌ Failed to confirm booking:', updateError)
         return res.status(500).json({ error: 'Update failed' })
       }
 
-      console.log('✅ Booking confirmed (final payment)')
+      console.log('✅ Booking confirmed:', booking_id)
       return res.status(200).json({ message: 'Booking confirmed' })
     }
 
+    // Deposit payment
     if (type === 'deposit') {
       const { data: existing } = await supabase
         .from('bookings')
         .select('id')
-        .eq('id', booking_key)
+        .eq('id', booking_id)
 
       if (existing && existing.length > 0) {
-        console.log('⚠️ Booking already exists, skipping insert.')
+        console.log('⚠️ Booking already exists:', booking_id)
         return res.status(200).json({ message: 'Booking already exists' })
       }
 
-      const { error: insertError } = await supabase.from('bookings').insert([
-        {
-          id: booking_key,
-          user_id,
-          car_id,
-          start_date,
-          end_date,
-          start_time,
-          end_time,
-          location,
-          total_price: parseFloat(total_price),
-          booking_type,
-          hours: hours || null,
-          deposit_amount: parseFloat(deposit_amount),
-          paid_deposit: true,
-          status: 'approved',
-        },
-      ])
+      const insertPayload = {
+        id: booking_id,
+        user_id,
+        car_id,
+        start_date,
+        end_date,
+        start_time,
+        end_time,
+        location,
+        total_price: parseFloat(total_price || '0'),
+        booking_type,
+        hours: hours || null,
+        deposit_amount: parseFloat(deposit_amount || '0'),
+        paid_deposit: true,
+        status: 'pending',
+      }
+
+      const { error: insertError } = await supabase
+        .from('bookings')
+        .insert([insertPayload])
 
       if (insertError) {
-        console.error('❌ Failed to insert booking:', insertError)
+        console.error('❌ Insert failed:', insertError)
         return res.status(500).json({ error: 'Insert failed' })
       }
 
-      console.log('✅ Booking inserted (deposit)')
+      console.log('✅ Booking inserted:', booking_id)
       return res.status(200).json({ message: 'Deposit booking created' })
     }
 

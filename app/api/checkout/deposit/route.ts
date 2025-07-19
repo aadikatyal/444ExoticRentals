@@ -46,25 +46,53 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing booking data" }, { status: 400 })
     }
 
-    const bookingKey = uuidv4()
-
-    const metadata = {
-      type: "deposit",
-      booking_key: bookingKey,
+    // ✅ Create a pending booking entry
+    const bookingId = uuidv4()
+    const insertPayload = {
+      id: bookingId,
       user_id: user.id,
-      car_id: carId || "",
-      start_date: startDate || "",
-      end_date: endDate || "",
-      start_time: startTime || "",
-      end_time: endTime || "",
-      location: location || "",
-      total_price: totalPrice?.toString() || "0",
-      booking_type: bookingType || "",
-      hours: hours ? hours.toString() : "",
-      deposit_amount: depositAmount?.toString() || "0",
+      car_id: carId,
+      start_date: startDate,
+      end_date: endDate,
+      start_time: startTime,
+      end_time: endTime,
+      location,
+      total_price: totalPrice,
+      booking_type: bookingType,
+      hours: hours || null,
+      deposit_amount: depositAmount,
+      paid_deposit: false,
+      status: "pending",
     }
 
-    // ✅ Log metadata for debugging
+    const { error: insertError } = await supabase
+      .from("bookings")
+      .insert([insertPayload])
+      .select("id, status")
+      .single()
+
+    if (insertError) {
+      console.error("❌ Failed to insert booking:", insertError)
+      return NextResponse.json({ error: "Failed to create booking" }, { status: 500 })
+    }
+
+    // ✅ Metadata for Stripe
+    const metadata = {
+      type: "deposit",
+      booking_id: bookingId,
+      user_id: user.id,
+      car_id: carId,
+      start_date: startDate,
+      end_date: endDate,
+      start_time: startTime,
+      end_time: endTime,
+      location,
+      total_price: totalPrice.toString(),
+      booking_type: bookingType,
+      hours: hours ? hours.toString() : "",
+      deposit_amount: depositAmount.toString(),
+    }
+
     console.log("📦 Creating deposit Stripe session with metadata:", metadata)
 
     const session = await stripe.checkout.sessions.create({
@@ -86,7 +114,7 @@ export async function POST(req: Request) {
         },
       ],
       metadata,
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/booking/confirmation?booking_key=${bookingKey}`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/booking/confirmation?id=${bookingId}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/fleet/${carId}?canceled=true`,
     })
 

@@ -194,7 +194,7 @@ export default function AccountPage() {
   
               <div className="mt-2 text-sm text-gray-600 flex flex-col md:flex-row md:justify-between md:items-center gap-2">
                 <div>
-                  {rental.start_date} – {rental.end_date} · {rental.pickup_location} · ${rental.total_price}
+                  {rental.start_date} – {rental.end_date} · {rental.location} · ${rental.total_price}
                 </div>
                 <div className="flex gap-2">
                   {showPay && (

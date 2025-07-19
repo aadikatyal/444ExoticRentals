@@ -135,7 +135,7 @@ export default function AdminBookingsPage() {
                     <td className="px-4 py-2">{b.start_date} - {b.end_date}</td>
                     <td className="px-4 py-2 capitalize">{b.booking_type}</td>
                     <td className="px-4 py-2">{b.hours ?? "-"}</td>
-                    <td className="px-4 py-2">{b.pickup_location}</td>
+                    <td className="px-4 py-2">{b.location}</td>
                     <td className="px-4 py-2 capitalize">{b.status}</td>
                     <td className="px-4 py-2 space-x-2">
                       {b.status === "pending" ? (

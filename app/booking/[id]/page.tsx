@@ -18,7 +18,7 @@ import {
 
 export default function BookingConfirmationPage() {
   const searchParams = useSearchParams()
-  const bookingKey = searchParams.get("booking_key")
+  const bookingKey = searchParams.get("id")
   const router = useRouter()
 
   const [booking, setBooking] = useState<any>(null)
@@ -36,7 +36,7 @@ export default function BookingConfirmationPage() {
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
-          .eq("booking_key", bookingKey)
+          .eq("id", bookingKey)
           .single()
 
         if (bookingError || !bookingData) throw new Error("Booking not found")
@@ -170,7 +170,7 @@ export default function BookingConfirmationPage() {
               <strong>Dates:</strong> {booking.start_date} to {booking.end_date}
             </p>
             <p>
-              <strong>Pickup Location:</strong> {booking.pickup_location}
+              <strong>Pickup Location:</strong> {booking.location}
             </p>
             <p>
               <strong>Total Price:</strong> ${booking.total_price}
