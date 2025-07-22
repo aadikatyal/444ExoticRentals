@@ -100,8 +100,9 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium">Our Location</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      123 Luxury Lane<br />
-                      Miami, FL 33101<br />
+                      Nobu Atlanta <br />
+                      3520 Peachtree Rd NE<br />
+                      Atlanta, GA 30326<br />
                       United States
                     </p>
                   </div>
