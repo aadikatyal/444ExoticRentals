@@ -21,12 +21,31 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "url": "https://www.444exoticrentals.com",
+              "logo": "https://www.444exoticrentals.com/logo.png",
+            }),
+          }}
+        />
+      </head>
       <body
         className={inter.className}
         suppressHydrationWarning
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+          attribute="data-theme"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
           <UserProvider>
             <CarProvider>
               <BookingProvider>{children}</BookingProvider>
