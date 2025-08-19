@@ -8,6 +8,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
 })
 
+// Normalize and resolve the absolute origin for redirect URLs
+function resolveOrigin(req: Request) {
+  const envBase = process.env.NEXT_PUBLIC_BASE_URL || "";
+  const headerOrigin = req.headers.get("origin") || "";
+  // Prefer explicit env, then header; trim trailing slash if present
+  const raw = (envBase || headerOrigin || "http://localhost:3000").trim();
+  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json()
@@ -95,6 +104,9 @@ export async function POST(req: Request) {
 
     console.log("📦 Creating deposit Stripe session with metadata:", metadata)
 
+    const origin = resolveOrigin(req);
+    console.log("🔗 Using redirect origin for Stripe:", origin);
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
@@ -114,8 +126,8 @@ export async function POST(req: Request) {
         },
       ],
       metadata,
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/booking/confirmation?id=${bookingId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/fleet/${carId}/book?canceled=true`,
+      success_url: `${origin}/booking/confirmation?id=${bookingId}`,
+      cancel_url: `${origin}/fleet/${carId}/book?canceled=true`,
     })
 
     if (!session.url) {
