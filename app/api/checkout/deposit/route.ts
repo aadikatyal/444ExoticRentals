@@ -115,7 +115,7 @@ export async function POST(req: Request) {
       ],
       metadata,
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/booking/confirmation?id=${bookingId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/fleet/${carId}?canceled=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/fleet/${carId}/book?canceled=true`,
     })
 
     if (!session.url) {
