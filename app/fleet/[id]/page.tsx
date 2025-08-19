@@ -9,6 +9,8 @@ export default function CarDetailPage({ params, searchParams }: PageProps) {
   const carId = params.id
   const canceled = searchParams.canceled
   
-  // Server-side redirect to the booking page
-  redirect(`/fleet/${carId}/book${canceled ? '?canceled=true' : ''}`)
+  // Force redirect to the booking page
+  const redirectUrl = `/fleet/${carId}/book${canceled ? '?canceled=true' : ''}`
+  console.log('Redirecting to:', redirectUrl)
+  redirect(redirectUrl)
 }
