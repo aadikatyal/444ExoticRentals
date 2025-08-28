@@ -94,14 +94,18 @@ export default function LoginPage() {
     console.log("🌐 Current redirectTo param:", redirectTo)
     
     // Store the redirect parameter for later use
-    localStorage.setItem('oauth_redirect', redirectTo)
-    sessionStorage.setItem('oauth_redirect', redirectTo)
+    if (redirectTo) {
+      localStorage.setItem('oauth_redirect', redirectTo)
+      sessionStorage.setItem('oauth_redirect', redirectTo)
+    }
   
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
+          redirectTo: redirectTo 
+            ? `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`
+            : `${window.location.origin}/auth/callback`,
         },
       })
   

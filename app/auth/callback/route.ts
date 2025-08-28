@@ -12,9 +12,10 @@ export async function GET(request: NextRequest) {
   console.log("🔍 Code:", code)
   console.log("🔍 Redirect:", redirectParam)
   console.log("🔍 Request URL origin:", requestUrl.origin)
+  console.log("🔍 All search params:", Object.fromEntries(requestUrl.searchParams.entries()))
   
   // For now, just redirect to the redirect parameter if it exists
-  if (redirectParam) {
+  if (redirectParam && redirectParam.trim() !== "") {
     console.log("🎯 Redirecting to:", redirectParam)
     
     // Construct the full redirect URL
@@ -29,6 +30,10 @@ export async function GET(request: NextRequest) {
     return response
   }
   
-  console.log("⚠️ No redirect, going to account")
+  console.log("⚠️ No redirect or empty redirect, going to account")
+  console.log("⚠️ redirectParam value:", JSON.stringify(redirectParam))
+  console.log("⚠️ redirectParam type:", typeof redirectParam)
+  console.log("⚠️ redirectParam length:", redirectParam?.length)
+  
   return NextResponse.redirect(new URL("/account", requestUrl.origin))
 }
