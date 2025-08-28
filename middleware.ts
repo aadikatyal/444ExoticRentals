@@ -13,8 +13,9 @@ export async function middleware(req: NextRequest) {
   // Bypass middleware for auth-related routes to prevent redirect loops
   if (req.nextUrl.pathname.startsWith("/auth") || 
       req.nextUrl.pathname === "/" || 
-      req.nextUrl.searchParams.has("code")) {
-    console.log("🔄 Bypassing middleware for auth route or homepage with code")
+      req.nextUrl.searchParams.has("code") ||
+      req.nextUrl.searchParams.has("state")) {
+    console.log("🔄 Bypassing middleware for auth route, homepage, or OAuth callback")
     return res
   }
 
