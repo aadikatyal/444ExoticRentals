@@ -15,31 +15,6 @@ function HomeContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  // Handle OAuth redirect when user lands on homepage with code
-  useEffect(() => {
-    const code = searchParams?.get("code")
-    if (code) {
-      console.log("🔄 OAuth code detected on homepage:", code)
-      
-      // Get the intended redirect from localStorage
-      const intendedRedirect = localStorage.getItem('oauth_redirect') || sessionStorage.getItem('oauth_redirect')
-      
-      if (intendedRedirect) {
-        console.log("🎯 Found intended redirect:", intendedRedirect)
-        // Clean up storage
-        localStorage.removeItem('oauth_redirect')
-        sessionStorage.removeItem('oauth_redirect')
-        
-        // Redirect to intended page
-        console.log("🚀 Redirecting to:", intendedRedirect)
-        router.replace(intendedRedirect)
-      } else {
-        console.log("⚠️ No redirect found, going to account")
-        router.replace('/account')
-      }
-    }
-  }, [searchParams, router])
-
   return (
     <PageLayout>
       {/* Hero Section */}

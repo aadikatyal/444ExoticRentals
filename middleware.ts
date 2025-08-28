@@ -10,14 +10,7 @@ export async function middleware(req: NextRequest) {
   console.log("🔍 All cookies in middleware:", req.cookies.getAll())
   console.log("🔍 Supabase cookies:", req.cookies.get('sb-access-token'), req.cookies.get('sb-refresh-token'))
 
-  // Bypass middleware for auth-related routes to prevent redirect loops
-  if (req.nextUrl.pathname.startsWith("/auth") || 
-      req.nextUrl.pathname === "/" || 
-      req.nextUrl.searchParams.has("code") ||
-      req.nextUrl.searchParams.has("state")) {
-    console.log("🔄 Bypassing middleware for auth route, homepage, or OAuth callback")
-    return res
-  }
+
 
   // Get session
   const {
