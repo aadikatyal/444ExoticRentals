@@ -6,6 +6,10 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
+  // Debug: Check what cookies are available
+  console.log("🔍 All cookies in middleware:", req.cookies.getAll())
+  console.log("🔍 Supabase cookies:", req.cookies.get('sb-access-token'), req.cookies.get('sb-refresh-token'))
+
   // Get session
   const {
     data: { session },
