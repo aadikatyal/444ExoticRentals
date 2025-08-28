@@ -23,11 +23,16 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("login")
-  const redirectTo = searchParams.get("redirect") || "/account"
+  const redirectTo = searchParams?.get("redirect") || "/account"
   const supabase = createClient()
+  
+  // Debug logging
+  console.log("🔍 Login page - searchParams:", searchParams)
+  console.log("🔍 Login page - redirect param:", searchParams?.get("redirect"))
+  console.log("🔍 Login page - redirectTo value:", redirectTo)
 
   useEffect(() => {
-    const tab = searchParams.get("tab")
+    const tab = searchParams?.get("tab")
     if (tab === "register") {
       setActiveTab("register")
     }
