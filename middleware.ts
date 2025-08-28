@@ -11,6 +11,11 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
+  console.log("🔍 Middleware running for:", req.nextUrl.pathname)
+  console.log("🔍 Session found:", !!session)
+  console.log("🔍 Session user:", session?.user?.email)
+  console.log("🔍 Referer:", req.headers.get('referer'))
+
   // Route protection
   const isProtectedRoute =
     req.nextUrl.pathname.startsWith("/account") ||
@@ -20,6 +25,7 @@ export async function middleware(req: NextRequest) {
 
   // Require login
   if (isProtectedRoute && !session) {
+    console.log("❌ Protected route accessed without session, redirecting to login")
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = "/login"
     redirectUrl.searchParams.set("redirect", req.nextUrl.pathname)
@@ -28,6 +34,7 @@ export async function middleware(req: NextRequest) {
 
   // If logged in and visiting login page, redirect to account
   if (req.nextUrl.pathname === "/login" && session) {
+    console.log("✅ Logged in user visiting login, redirecting to account")
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = "/account"
     return NextResponse.redirect(redirectUrl)
