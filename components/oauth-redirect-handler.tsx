@@ -27,17 +27,9 @@ export default function OAuthRedirectHandler() {
         const callbackUrl = `/auth/callback?code=${code}&redirect=${originalRedirect}`
         console.log("🔄 Redirecting to auth callback:", callbackUrl)
         
-        // Immediately redirect without delay to avoid homepage rendering
-        console.log("🚀 About to redirect with router.push to:", callbackUrl)
-        
-        // Try using window.location as a fallback if router.push doesn't work
-        try {
-          router.push(callbackUrl)
-          console.log("✅ Router.push called successfully")
-        } catch (error) {
-          console.error("❌ Router.push failed, using window.location:", error)
-          window.location.href = callbackUrl
-        }
+        // Use window.location.href to force a hard redirect that hits the server
+        console.log("🚀 Using window.location.href for hard redirect to:", callbackUrl)
+        window.location.href = callbackUrl
         
         // Clean up
         localStorage.removeItem('oauth_redirect')
@@ -45,7 +37,7 @@ export default function OAuthRedirectHandler() {
         console.log("🧹 Cleaned up localStorage and sessionStorage")
       } else {
         // Fallback: just redirect with code
-        router.push(`/auth/callback?code=${code}`)
+        window.location.href = `/auth/callback?code=${code}`
       }
     }
   }, [searchParams, router])
@@ -62,5 +54,5 @@ export default function OAuthRedirectHandler() {
     )
   }
   
-  return null
+  return null // This component doesn't render anything
 }

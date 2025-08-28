@@ -18,12 +18,14 @@ export async function GET(request: NextRequest) {
     
     try {
       const supabase = createClient()
+      console.log("🔍 Supabase client created")
       
       // Exchange the OAuth code for a session
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
       
       if (error) {
-        console.error("❌ OAuth code exchange failed:", error)
+        console.error("❌ OAuth code exchange failed:", error.message)
+        console.error("❌ Error status:", error.status)
         return NextResponse.redirect(new URL("/login?error=auth_failed", requestUrl.origin))
       }
       
