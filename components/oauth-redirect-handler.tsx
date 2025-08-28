@@ -28,11 +28,21 @@ export default function OAuthRedirectHandler() {
         console.log("🔄 Redirecting to auth callback:", callbackUrl)
         
         // Immediately redirect without delay to avoid homepage rendering
-        router.push(callbackUrl)
+        console.log("🚀 About to redirect with router.push to:", callbackUrl)
+        
+        // Try using window.location as a fallback if router.push doesn't work
+        try {
+          router.push(callbackUrl)
+          console.log("✅ Router.push called successfully")
+        } catch (error) {
+          console.error("❌ Router.push failed, using window.location:", error)
+          window.location.href = callbackUrl
+        }
         
         // Clean up
         localStorage.removeItem('oauth_redirect')
         sessionStorage.removeItem('oauth_redirect')
+        console.log("🧹 Cleaned up localStorage and sessionStorage")
       } else {
         // Fallback: just redirect with code
         router.push(`/auth/callback?code=${code}`)
