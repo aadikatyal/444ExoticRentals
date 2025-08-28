@@ -15,34 +15,24 @@ export async function GET(request: NextRequest) {
   if (!redirectParam && state) {
     try {
       const stateData = JSON.parse(atob(state.split('.')[1]))
-      if (stateData.referrer) {
-        // Extract redirect from the referrer URL if it exists
-        const referrerUrl = new URL(stateData.referrer)
-        redirectParam = referrerUrl.searchParams.get("redirect")
-      }
-    } catch (e) {
-      console.log("Could not parse state parameter")
-    }
-  }
-  
-  let redirect = redirectParam || "/account"
-
-  console.log("📦 Incoming redirectParam:", redirectParam)
-  console.log("🌐 Full request URL:", requestUrl.toString())
-  console.log("🧭 All search params:", Array.from(requestUrl.searchParams.entries()))
-  console.log("🔍 State parameter:", state)
-  
-  if (state) {
-    try {
-      const stateData = JSON.parse(atob(state.split('.')[1]))
       console.log("🔍 Parsed state data:", stateData)
       if (stateData.referrer) {
         console.log("🔍 Referrer from state:", stateData.referrer)
+        // Extract redirect from the referrer URL
+        const referrerUrl = new URL(stateData.referrer)
+        redirectParam = referrerUrl.searchParams.get("redirect")
+        console.log("🔍 Extracted redirect from referrer:", redirectParam)
       }
     } catch (e) {
       console.log("❌ Could not parse state parameter:", e)
     }
   }
+  
+  let redirect = redirectParam || "/account"
+  console.log("🎯 Initial redirect value:", redirect)
+  console.log("🌐 Full request URL:", requestUrl.toString())
+  console.log("🧭 All search params:", Array.from(requestUrl.searchParams.entries()))
+  console.log("🔍 State parameter:", state)
 
   if (!code) {
     console.warn("⚠️ No code in URL, redirecting immediately to:", redirect)
