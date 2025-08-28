@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { Suspense } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,22 +9,14 @@ import { PageLayout } from "@/components/page-layout"
 import { BookingForm } from "@/components/booking-form"
 import { CarDetailModal } from "@/components/car-detail-modal"
 import FeaturedCars from "@/components/featured-cars"
+import OAuthRedirectHandler from "@/components/oauth-redirect-handler"
 
 export default function Home() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-
-  useEffect(() => {
-    // Check if we have an OAuth code and redirect to auth callback
-    const code = searchParams.get("code")
-    if (code) {
-      console.log("🔄 OAuth code detected, redirecting to auth callback...")
-      // Redirect to auth callback with the code
-      router.replace(`/auth/callback?code=${code}`)
-    }
-  }, [searchParams, router])
   return (
     <PageLayout>
+      <Suspense fallback={null}>
+        <OAuthRedirectHandler />
+      </Suspense>
       {/* Hero Section */}
       <section className="relative w-full min-h-screen bg-black flex flex-col justify-center">
         <div className="absolute inset-0 z-0">
