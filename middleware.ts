@@ -10,6 +10,14 @@ export async function middleware(req: NextRequest) {
   console.log("🔍 All cookies in middleware:", req.cookies.getAll())
   console.log("🔍 Supabase cookies:", req.cookies.get('sb-access-token'), req.cookies.get('sb-refresh-token'))
 
+  // Bypass middleware for auth-related routes to prevent redirect loops
+  if (req.nextUrl.pathname.startsWith("/auth") || 
+      req.nextUrl.pathname === "/" || 
+      req.nextUrl.searchParams.has("code")) {
+    console.log("🔄 Bypassing middleware for auth route or homepage with code")
+    return res
+  }
+
   // Get session
   const {
     data: { session },
@@ -29,18 +37,6 @@ export async function middleware(req: NextRequest) {
 
   // Require login
   if (isProtectedRoute && !session) {
-    // Check if user is coming from auth callback (recently authenticated)
-    const referer = req.headers.get('referer')
-    const isFromAuthCallback = referer && referer.includes('/auth/callback')
-    
-    console.log("🔍 Referer:", referer)
-    console.log("🔍 Is from auth callback:", isFromAuthCallback)
-    
-    if (isFromAuthCallback) {
-      console.log("✅ User coming from auth callback, allowing access")
-      return res
-    }
-    
     console.log("❌ Protected route accessed without session, redirecting to login")
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = "/login"
