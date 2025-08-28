@@ -44,12 +44,22 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // If logged in and visiting login page, redirect to account
+  // If logged in and visiting login page, check for redirect parameter
   if (req.nextUrl.pathname === "/login" && session) {
-    console.log("✅ Logged in user visiting login, redirecting to account")
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = "/account"
-    return NextResponse.redirect(redirectUrl)
+    const redirectParam = req.nextUrl.searchParams.get("redirect")
+    console.log("✅ Logged in user visiting login, redirect param:", redirectParam)
+    
+    if (redirectParam) {
+      // User has a specific redirect destination, go there directly
+      console.log("🔄 Redirecting logged-in user to:", redirectParam)
+      return NextResponse.redirect(new URL(redirectParam, req.url))
+    } else {
+      // No redirect specified, go to account page
+      console.log("🔄 No redirect specified, going to account")
+      const redirectUrl = req.nextUrl.clone()
+      redirectUrl.pathname = "/account"
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
   // Onboarding enforcement
