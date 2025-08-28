@@ -97,6 +97,14 @@ export default function LoginPage() {
     console.log("📱 Screen size:", `${window.screen.width}x${window.screen.height}`)
     console.log("📱 Viewport size:", `${window.innerWidth}x${window.innerHeight}`)
     
+    // Show debug info on the page for mobile users
+    const debugInfo = `📱 Debug: Starting OAuth
+🌐 Redirect: ${redirectTo || 'none'}
+📱 Device: ${/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'}
+📱 Screen: ${window.screen.width}x${window.screen.height}`
+    
+    setError(debugInfo)
+    
     // Store the redirect parameter for later use
     if (redirectTo) {
       localStorage.setItem('oauth_redirect', redirectTo)
@@ -106,6 +114,8 @@ export default function LoginPage() {
   
     try {
       console.log("🔄 Calling supabase.auth.signInWithOAuth...")
+      setError(debugInfo + "\n🔄 Calling Google OAuth...")
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -117,10 +127,15 @@ export default function LoginPage() {
       
       console.log("✅ OAuth call completed, error:", error)
       if (error) throw error
+      
+      setError(debugInfo + "\n✅ OAuth call completed successfully!")
+      
     } catch (error: any) {
       console.error("❌ Google login error:", error.message)
       console.error("❌ Full error object:", error)
-      setError(error.message || "An error occurred during Google login")
+      
+      const errorMessage = debugInfo + "\n❌ Error: " + (error.message || "An error occurred during Google login")
+      setError(errorMessage)
       setIsLoading(false)
     }
   }
