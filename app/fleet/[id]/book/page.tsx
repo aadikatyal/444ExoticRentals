@@ -28,6 +28,10 @@ export default function BookingPage() {
   const { user } = useUser()
   const { cars } = useCars()
 
+  console.log("🚀 BookingPage component loaded!")
+  console.log("🚀 Params:", params)
+  console.log("🚀 User:", user)
+
   const [car, setCar] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const canceled = searchParams.get("canceled") === "true"
