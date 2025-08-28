@@ -14,8 +14,9 @@ export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname.startsWith("/auth") || 
       req.nextUrl.pathname === "/" || 
       req.nextUrl.searchParams.has("code") ||
-      req.nextUrl.searchParams.has("state")) {
-    console.log("🔄 Bypassing middleware for auth route, homepage, or OAuth callback")
+      req.nextUrl.searchParams.has("state") ||
+      (req.nextUrl.pathname === "/login" && req.nextUrl.searchParams.has("redirect"))) {
+    console.log("🔄 Bypassing middleware for auth route, homepage, OAuth callback, or login with redirect")
     return res
   }
 
