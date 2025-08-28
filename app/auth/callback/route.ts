@@ -39,15 +39,6 @@ export async function GET(request: NextRequest) {
     }
     
     console.log("✅ Session created successfully for user:", data.user?.email)
-    console.log("🔍 Session data:", {
-      access_token: data.session?.access_token ? "present" : "missing",
-      refresh_token: data.session?.refresh_token ? "present" : "missing",
-      expires_at: data.session?.expires_at,
-      user_id: data.user?.id
-    })
-    
-    // Small delay to ensure session is fully established
-    await new Promise(resolve => setTimeout(resolve, 100))
     
     // Now redirect to the intended destination
     if (redirectParam && redirectParam.trim() !== "") {
