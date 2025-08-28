@@ -6,8 +6,26 @@ import type { NextRequest } from "next/server"
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get("code")
-  const redirectParam = requestUrl.searchParams.get("redirect")
-  let redirect = redirectParam ? decodeURIComponent(redirectParam) : "/account"
+  const state = requestUrl.searchParams.get("state")
+  
+  // Try to get redirect from query params first, then from state
+  let redirectParam = requestUrl.searchParams.get("redirect")
+  
+  // If no redirect in query params, try to extract from state
+  if (!redirectParam && state) {
+    try {
+      const stateData = JSON.parse(atob(state.split('.')[1]))
+      if (stateData.referrer) {
+        // Extract redirect from the referrer URL if it exists
+        const referrerUrl = new URL(stateData.referrer)
+        redirectParam = referrerUrl.searchParams.get("redirect")
+      }
+    } catch (e) {
+      console.log("Could not parse state parameter")
+    }
+  }
+  
+  let redirect = redirectParam || "/account"
 
   console.log("📦 Incoming redirectParam:", redirectParam)
   console.log("🌐 Full request URL:", requestUrl.toString())
