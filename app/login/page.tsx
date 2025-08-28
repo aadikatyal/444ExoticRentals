@@ -87,6 +87,10 @@ export default function LoginPage() {
   
     console.log("🟢 Starting Google OAuth")
     console.log("🌐 Current redirectTo param:", redirectTo)
+    
+    // Store the redirect parameter for later use
+    localStorage.setItem('oauth_redirect', redirectTo)
+    sessionStorage.setItem('oauth_redirect', redirectTo)
   
     try {
       const { error } = await supabase.auth.signInWithOAuth({

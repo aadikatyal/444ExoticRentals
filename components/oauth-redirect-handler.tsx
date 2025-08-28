@@ -12,8 +12,21 @@ export default function OAuthRedirectHandler() {
     const code = searchParams.get("code")
     if (code) {
       console.log("🔄 OAuth code detected, redirecting to auth callback...")
-      // Redirect to auth callback with the code
-      router.replace(`/auth/callback?code=${code}`)
+      
+      // Try to get the original redirect from localStorage or sessionStorage
+      const originalRedirect = localStorage.getItem('oauth_redirect') || sessionStorage.getItem('oauth_redirect')
+      
+      if (originalRedirect) {
+        console.log("🎯 Found original redirect:", originalRedirect)
+        // Redirect to auth callback with both code and redirect
+        router.replace(`/auth/callback?code=${code}&redirect=${encodeURIComponent(originalRedirect)}`)
+        // Clean up
+        localStorage.removeItem('oauth_redirect')
+        sessionStorage.removeItem('oauth_redirect')
+      } else {
+        // Fallback: just redirect with code
+        router.replace(`/auth/callback?code=${code}`)
+      }
     }
   }, [searchParams, router])
 
