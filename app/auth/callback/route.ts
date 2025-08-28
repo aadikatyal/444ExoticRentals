@@ -124,9 +124,18 @@ export async function GET(request: NextRequest) {
     profile = updatedProfile
   }
 
-  redirect = profile?.is_admin
+  // Use the redirect parameter if available, otherwise fallback to account
+  const finalRedirect = profile?.is_admin
     ? "/admin"
-    : redirect || "/account"
+    : redirectParam || "/account"
+    
+  console.log("🎯 Final redirect decision:", {
+    isAdmin: profile?.is_admin,
+    redirectParam,
+    finalRedirect
+  })
+  
+  redirect = finalRedirect
 
   console.log("✅ Final redirect target:", redirect)
 
