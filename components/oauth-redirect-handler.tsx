@@ -8,17 +8,30 @@ export default function OAuthRedirectHandler() {
   const router = useRouter()
   const [isRedirecting, setIsRedirecting] = useState(false)
 
+  console.log("🔍 OAuthRedirectHandler component mounted")
+  console.log("🔍 searchParams:", searchParams)
+  console.log("🔍 searchParams size:", searchParams?.size)
+
   useEffect(() => {
+    console.log("🔍 useEffect triggered")
+    console.log("🔍 searchParams in useEffect:", searchParams)
+    
     // Check if we have an OAuth code and redirect to auth callback
-    if (!searchParams) return
+    if (!searchParams) {
+      console.log("⚠️ No searchParams, returning early")
+      return
+    }
     
     const code = searchParams.get("code")
+    console.log("🔍 Code found:", code)
+    
     if (code) {
       console.log("🔄 OAuth code detected, redirecting to auth callback...")
       setIsRedirecting(true)
       
       // Try to get the original redirect from localStorage or sessionStorage
       const originalRedirect = localStorage.getItem('oauth_redirect') || sessionStorage.getItem('oauth_redirect')
+      console.log("🔍 Original redirect from storage:", originalRedirect)
       
       if (originalRedirect) {
         console.log("🎯 Found original redirect:", originalRedirect)
@@ -36,9 +49,12 @@ export default function OAuthRedirectHandler() {
         sessionStorage.removeItem('oauth_redirect')
         console.log("🧹 Cleaned up localStorage and sessionStorage")
       } else {
+        console.log("⚠️ No original redirect found in storage")
         // Fallback: just redirect with code
         window.location.href = `/auth/callback?code=${code}`
       }
+    } else {
+      console.log("⚠️ No code parameter found")
     }
   }, [searchParams, router])
 
