@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
 
   redirect = profile?.is_admin
     ? "/admin"
-    : decodeURIComponent(redirectParam || "/account")
+    : (redirectParam || "/account")
 
   console.log("✅ Final redirect target:", redirect)
 

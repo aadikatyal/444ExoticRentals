@@ -85,18 +85,17 @@ export default function LoginPage() {
     setIsLoading(true)
     setError("")
   
-    const encodedRedirect = encodeURIComponent(redirectTo)
-    const fullRedirectTo = `${window.location.origin}/auth/callback?redirect=${encodedRedirect}`
-  
     console.log("🟢 Starting Google OAuth")
     console.log("🌐 Current redirectTo param:", redirectTo)
-    console.log("🔁 Final OAuth redirectTo URL:", fullRedirectTo)
   
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: fullRedirectTo,
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            redirect: redirectTo
+          }
         },
       })
   
