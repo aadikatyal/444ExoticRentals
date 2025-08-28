@@ -39,9 +39,9 @@ export default function AdminPageWrapper({ children }: { children: React.ReactNo
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <AdminNavbar />
-      <main>{children}</main>
+      <main className="w-full max-w-full px-4 sm:px-6 py-4">{children}</main>
     </div>
   )
 }
