@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 
 export default function OAuthRedirectHandler() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   useEffect(() => {
     // Check if we have an OAuth code and redirect to auth callback
@@ -14,6 +15,7 @@ export default function OAuthRedirectHandler() {
     const code = searchParams.get("code")
     if (code) {
       console.log("🔄 OAuth code detected, redirecting to auth callback...")
+      setIsRedirecting(true)
       
       // Try to get the original redirect from localStorage or sessionStorage
       const originalRedirect = localStorage.getItem('oauth_redirect') || sessionStorage.getItem('oauth_redirect')
@@ -24,16 +26,31 @@ export default function OAuthRedirectHandler() {
         // Don't double-encode the redirect parameter
         const callbackUrl = `/auth/callback?code=${code}&redirect=${originalRedirect}`
         console.log("🔄 Redirecting to auth callback:", callbackUrl)
-        router.replace(callbackUrl)
+        
+        // Immediately redirect without delay to avoid homepage rendering
+        router.push(callbackUrl)
+        
         // Clean up
         localStorage.removeItem('oauth_redirect')
         sessionStorage.removeItem('oauth_redirect')
       } else {
         // Fallback: just redirect with code
-        router.replace(`/auth/callback?code=${code}`)
+        router.push(`/auth/callback?code=${code}`)
       }
     }
   }, [searchParams, router])
 
+  // Show loading state while redirecting to prevent homepage content from showing
+  if (isRedirecting) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-center">Redirecting to booking...</p>
+        </div>
+      </div>
+    )
+  }
+  
   return null // This component doesn't render anything
 }
