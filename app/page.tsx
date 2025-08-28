@@ -10,6 +10,7 @@ import { BookingForm } from "@/components/booking-form"
 import { CarDetailModal } from "@/components/car-detail-modal"
 import FeaturedCars from "@/components/featured-cars"
 import { useSearchParams, useRouter } from "next/navigation"
+import OAuthRedirectHandler from "@/components/oauth-redirect-handler"
 
 function HomeContent() {
   const searchParams = useSearchParams()
@@ -17,6 +18,9 @@ function HomeContent() {
 
   return (
     <PageLayout>
+      <Suspense fallback={null}>
+        <OAuthRedirectHandler />
+      </Suspense>
       {/* Hero Section */}
       <section className="relative w-full min-h-screen bg-black flex flex-col justify-center">
         <div className="absolute inset-0 z-0">
