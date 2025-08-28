@@ -25,6 +25,18 @@ export async function middleware(req: NextRequest) {
 
   // Require login
   if (isProtectedRoute && !session) {
+    // Check if user is coming from auth callback (recently authenticated)
+    const referer = req.headers.get('referer')
+    const isFromAuthCallback = referer && referer.includes('/auth/callback')
+    
+    console.log("🔍 Referer:", referer)
+    console.log("🔍 Is from auth callback:", isFromAuthCallback)
+    
+    if (isFromAuthCallback) {
+      console.log("✅ User coming from auth callback, allowing access")
+      return res
+    }
+    
     console.log("❌ Protected route accessed without session, redirecting to login")
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = "/login"
