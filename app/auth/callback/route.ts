@@ -26,10 +26,13 @@ export async function GET(request: NextRequest) {
     
     // Exchange the code for a session
     console.log("🔄 Exchanging code for session...")
+    
+    // For PKCE flow, we need to handle the code verifier properly
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (error) {
       console.log("❌ Error exchanging code for session:", error)
+      console.log("❌ Error details:", error.message, error.status)
       return NextResponse.redirect(new URL("/login?error=auth_failed", requestUrl.origin))
     }
     

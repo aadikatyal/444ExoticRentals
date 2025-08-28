@@ -111,8 +111,8 @@ export default function LoginPage() {
         provider: "google",
         options: {
           redirectTo: redirectTo 
-            ? `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`
-            : `${window.location.origin}/auth/callback`,
+            ? `${window.location.origin}${redirectTo}`
+            : `${window.location.origin}/account`,
         },
       })
       
