@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
   console.log("🌐 Full request URL:", requestUrl.toString())
   console.log("🧭 All search params:", Array.from(requestUrl.searchParams.entries()))
   console.log("🔍 State parameter:", state)
+  console.log("🔍 Redirect parameter value:", redirectParam)
+  console.log("🔍 Redirect parameter type:", typeof redirectParam)
 
   if (!code) {
     console.warn("⚠️ No code in URL, redirecting immediately to:", redirect)
@@ -135,10 +137,15 @@ export async function GET(request: NextRequest) {
   console.log("🎯 Final redirect decision:", {
     isAdmin: profile?.is_admin,
     redirectParam,
-    finalRedirect
+    finalRedirect,
+    originalRedirect: redirect
   })
   
+  // Ensure we're using the correct redirect value
   redirect = finalRedirect
+  
+  console.log("🚀 About to redirect to:", redirect)
+  console.log("🚀 Redirect URL will be:", new URL(redirect, requestUrl.origin).toString())
 
   console.log("✅ Final redirect target:", redirect)
 
