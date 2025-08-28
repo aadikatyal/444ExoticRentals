@@ -4,150 +4,22 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export async function GET(request: NextRequest) {
+  console.log("🚀 AUTH CALLBACK ROUTE CALLED!")
+  console.log("🚀 Request URL:", request.url)
+  
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get("code")
-  const state = requestUrl.searchParams.get("state")
+  const redirectParam = requestUrl.searchParams.get("redirect")
   
-  // Try to get redirect from query params first, then from state
-  let redirectParam = requestUrl.searchParams.get("redirect")
+  console.log("🔍 Code:", code)
+  console.log("🔍 Redirect:", redirectParam)
   
-  console.log("🔍 Raw redirect parameter from URL:", redirectParam)
-  console.log("🔍 All search params:", Array.from(requestUrl.searchParams.entries()))
-  
-  // If no redirect in query params, try to extract from state
-  if (!redirectParam && state) {
-    try {
-      const stateData = JSON.parse(atob(state.split('.')[1]))
-      console.log("🔍 Parsed state data:", stateData)
-      if (stateData.referrer) {
-        console.log("🔍 Referrer from state:", stateData.referrer)
-        // Extract redirect from the referrer URL
-        const referrerUrl = new URL(stateData.referrer)
-        redirectParam = referrerUrl.searchParams.get("redirect")
-        console.log("🔍 Extracted redirect from referrer:", redirectParam)
-      }
-    } catch (e) {
-      console.log("❌ Could not parse state parameter:", e)
-    }
+  // For now, just redirect to the redirect parameter if it exists
+  if (redirectParam) {
+    console.log("🎯 Redirecting to:", redirectParam)
+    return NextResponse.redirect(new URL(redirectParam, requestUrl.origin))
   }
   
-  let redirect = redirectParam || "/account"
-  console.log("🎯 Initial redirect value:", redirect)
-  console.log("🌐 Full request URL:", requestUrl.toString())
-  console.log("🧭 All search params:", Array.from(requestUrl.searchParams.entries()))
-  console.log("🔍 State parameter:", state)
-  console.log("🔍 Redirect parameter value:", redirectParam)
-  console.log("🔍 Redirect parameter type:", typeof redirectParam)
-
-  if (!code) {
-    console.warn("⚠️ No code in URL, redirecting immediately to:", redirect)
-    return NextResponse.redirect(new URL(redirect, requestUrl.origin))
-  }
-
-  const cookieStore = cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.exchangeCodeForSession(code)
-
-  console.log("📬 Session after code exchange:", session)
-
-  if (sessionError || !session) {
-    console.error("❌ Error exchanging code for session:", sessionError?.message)
-    return NextResponse.redirect(new URL("/login", requestUrl.origin))
-  }
-
-  const user = session.user
-  const email = user.email
-  const userId = user.id
-
-  console.log("🧑 User:", { id: userId, email })
-
-  if (!email || !userId) {
-    console.error("❌ Missing user info from session")
-    return NextResponse.redirect(new URL("/login", requestUrl.origin))
-  }
-
-  const adminEmails = ["aadikatyal21@gmail.com"]
-  const isAdmin = adminEmails.includes(email)
-
-  let { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, is_admin")
-    .eq("id", userId)
-    .maybeSingle()
-
-  console.log("📄 Profile from Supabase:", profile)
-
-  if (!profile) {
-    // Try to match by email
-    const { data: emailMatch } = await supabase
-      .from("profiles")
-      .select("id, is_admin")
-      .eq("email", email)
-      .maybeSingle()
-
-    if (emailMatch) {
-      console.log("🔄 Found profile by email, updating ID...")
-      await supabase
-        .from("profiles")
-        .update({ id: userId })
-        .eq("email", email)
-
-      profile = emailMatch
-    } else {
-      console.log("🆕 Inserting new profile...")
-      const { error: insertError } = await supabase.from("profiles").insert({
-        id: userId,
-        email,
-        onboarded: false,
-        is_admin: isAdmin,
-      })
-      if (insertError) {
-        console.error("❌ Insert error:", insertError.message)
-      }
-
-      return NextResponse.redirect(
-        new URL(`/onboarding?redirect=${redirectParam || "/account"}`, requestUrl.origin)
-      )
-    }
-  }
-
-  // Make sure is_admin stays up to date
-  if (profile.is_admin !== isAdmin) {
-    console.log("🔧 Updating is_admin to match config")
-    await supabase.from("profiles").update({ is_admin: isAdmin }).eq("id", userId)
-
-    const { data: updatedProfile } = await supabase
-      .from("profiles")
-      .select("id, is_admin")
-      .eq("id", userId)
-      .single()
-
-    profile = updatedProfile
-  }
-
-  // Use the redirect parameter if available, otherwise fallback to account
-  const finalRedirect = profile?.is_admin
-    ? "/admin"
-    : redirectParam || "/account"
-    
-  console.log("🎯 Final redirect decision:", {
-    isAdmin: profile?.is_admin,
-    redirectParam,
-    finalRedirect,
-    originalRedirect: redirect
-  })
-  
-  // Ensure we're using the correct redirect value
-  redirect = finalRedirect
-  
-  console.log("🚀 About to redirect to:", redirect)
-  console.log("🚀 Redirect URL will be:", new URL(redirect, requestUrl.origin).toString())
-
-  console.log("✅ Final redirect target:", redirect)
-
-  return NextResponse.redirect(new URL(redirect, requestUrl.origin))
+  console.log("⚠️ No redirect, going to account")
+  return NextResponse.redirect(new URL("/account", requestUrl.origin))
 }
