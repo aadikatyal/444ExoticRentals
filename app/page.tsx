@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import { CarDetailModal } from "@/components/car-detail-modal"
 import FeaturedCars from "@/components/featured-cars"
 import { useSearchParams, useRouter } from "next/navigation"
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -227,5 +227,13 @@ export default function Home() {
 
       <CarDetailModal />
     </PageLayout>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   )
 }
