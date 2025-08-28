@@ -14,9 +14,8 @@ export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname.startsWith("/auth") || 
       req.nextUrl.pathname === "/" || 
       req.nextUrl.searchParams.has("code") ||
-      req.nextUrl.searchParams.has("state") ||
-      (req.nextUrl.pathname === "/login" && req.nextUrl.searchParams.has("redirect"))) {
-    console.log("🔄 Bypassing middleware for auth route, homepage, OAuth callback, or login with redirect")
+      req.nextUrl.searchParams.has("state")) {
+    console.log("🔄 Bypassing middleware for auth route, homepage, or OAuth callback")
     return res
   }
 
@@ -46,22 +45,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // If logged in and visiting login page, check for redirect parameter
+  // If logged in and visiting login page, redirect to account
   if (req.nextUrl.pathname === "/login" && session) {
-    const redirectParam = req.nextUrl.searchParams.get("redirect")
-    console.log("✅ Logged in user visiting login, redirect param:", redirectParam)
-    
-    if (redirectParam) {
-      // User has a specific redirect destination, go there directly
-      console.log("🔄 Redirecting logged-in user to:", redirectParam)
-      return NextResponse.redirect(new URL(redirectParam, req.url))
-    } else {
-      // No redirect specified, go to account page
-      console.log("🔄 No redirect specified, going to account")
-      const redirectUrl = req.nextUrl.clone()
-      redirectUrl.pathname = "/account"
-      return NextResponse.redirect(redirectUrl)
-    }
+    console.log("✅ Logged in user visiting login, redirecting to account")
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = "/account"
+    return NextResponse.redirect(redirectUrl)
   }
 
   // Onboarding enforcement
