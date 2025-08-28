@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,6 +12,18 @@ import { CarDetailModal } from "@/components/car-detail-modal"
 import FeaturedCars from "@/components/featured-cars"
 
 export default function Home() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  useEffect(() => {
+    // Check if we have an OAuth code and redirect to auth callback
+    const code = searchParams.get("code")
+    if (code) {
+      console.log("🔄 OAuth code detected, redirecting to auth callback...")
+      // Redirect to auth callback with the code
+      router.replace(`/auth/callback?code=${code}`)
+    }
+  }, [searchParams, router])
   return (
     <PageLayout>
       {/* Hero Section */}
