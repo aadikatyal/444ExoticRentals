@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense } from "react"
+import { useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -9,14 +9,37 @@ import { PageLayout } from "@/components/page-layout"
 import { BookingForm } from "@/components/booking-form"
 import { CarDetailModal } from "@/components/car-detail-modal"
 import FeaturedCars from "@/components/featured-cars"
-import OAuthRedirectHandler from "@/components/oauth-redirect-handler"
+import { useSearchParams, useRouter } from "next/navigation"
 
 export default function Home() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // Handle OAuth redirect
+  useEffect(() => {
+    const code = searchParams?.get("code")
+    if (code) {
+      // Get the intended redirect from localStorage
+      const intendedRedirect = localStorage.getItem('oauth_redirect') || sessionStorage.getItem('oauth_redirect')
+      
+      if (intendedRedirect) {
+        // Clean up storage
+        localStorage.removeItem('oauth_redirect')
+        sessionStorage.removeItem('oauth_redirect')
+        
+        // Redirect directly to intended page (skip the broken auth callback)
+        console.log("🔄 OAuth code detected, redirecting to:", intendedRedirect)
+        router.replace(intendedRedirect)
+      } else {
+        // No redirect found, go to account page
+        console.log("⚠️ No redirect found, going to account")
+        router.replace('/account')
+      }
+    }
+  }, [searchParams, router])
+
   return (
     <PageLayout>
-      <Suspense fallback={null}>
-        <OAuthRedirectHandler />
-      </Suspense>
       {/* Hero Section */}
       <section className="relative w-full min-h-screen bg-black flex flex-col justify-center">
         <div className="absolute inset-0 z-0">
