@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from "next/navigation"
 export default function OAuthRedirectHandler() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [isRedirecting, setIsRedirecting] = useState(false)
 
   console.log("🔍 OAuthRedirectHandler component mounted")
   console.log("🔍 searchParams:", searchParams)
@@ -23,19 +22,23 @@ export default function OAuthRedirectHandler() {
     }
     
     const code = searchParams.get("code")
+    const redirect = searchParams.get("redirect")
     console.log("🔍 Code found:", code)
+    console.log("🔍 Redirect found:", redirect)
     
     if (code) {
       console.log("🔄 OAuth code detected, redirecting to auth callback...")
       
-      // Try to get the original redirect from localStorage or sessionStorage
-      const originalRedirect = localStorage.getItem('oauth_redirect') || sessionStorage.getItem('oauth_redirect')
-      console.log("🔍 Original redirect from storage:", originalRedirect)
+      // Use the redirect parameter from the URL if available, otherwise try localStorage
+      let originalRedirect = redirect
+      if (!originalRedirect) {
+        originalRedirect = localStorage.getItem('oauth_redirect') || sessionStorage.getItem('oauth_redirect')
+        console.log("🔍 Got redirect from localStorage:", originalRedirect)
+      }
       
       if (originalRedirect) {
         console.log("🎯 Found original redirect:", originalRedirect)
         // Redirect to auth callback with both code and redirect
-        // Don't double-encode the redirect parameter
         const callbackUrl = `/auth/callback?code=${code}&redirect=${originalRedirect}`
         console.log("🔄 Redirecting to auth callback:", callbackUrl)
         
@@ -43,12 +46,12 @@ export default function OAuthRedirectHandler() {
         console.log("🚀 Immediate redirect to:", callbackUrl)
         window.location.href = callbackUrl
         
-        // Clean up after redirect is initiated
+        // Clean up localStorage after redirect is initiated
         localStorage.removeItem('oauth_redirect')
         sessionStorage.removeItem('oauth_redirect')
         console.log("🧹 Cleaned up localStorage and sessionStorage")
       } else {
-        console.log("⚠️ No original redirect found in storage")
+        console.log("⚠️ No original redirect found")
         // Fallback: just redirect with code
         window.location.href = `/auth/callback?code=${code}`
       }
