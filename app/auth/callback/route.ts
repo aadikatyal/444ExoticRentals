@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request: NextRequest) {
   console.log("🚀 AUTH CALLBACK ROUTE CALLED!")
@@ -14,26 +15,60 @@ export async function GET(request: NextRequest) {
   console.log("🔍 Request URL origin:", requestUrl.origin)
   console.log("🔍 All search params:", Object.fromEntries(requestUrl.searchParams.entries()))
   
-  // For now, just redirect to the redirect parameter if it exists
-  if (redirectParam && redirectParam.trim() !== "") {
-    console.log("🎯 Redirecting to:", redirectParam)
-    
-    // Construct the full redirect URL
-    const redirectUrl = new URL(redirectParam, requestUrl.origin)
-    console.log("🔍 Full redirect URL:", redirectUrl.toString())
-    
-    // Perform the redirect
-    const response = NextResponse.redirect(redirectUrl)
-    console.log("🔍 Response status:", response.status)
-    console.log("🔍 Response headers:", Object.fromEntries(response.headers.entries()))
-    
-    return response
+  if (!code) {
+    console.log("❌ No code parameter found")
+    return NextResponse.redirect(new URL("/login", requestUrl.origin))
   }
-  
-  console.log("⚠️ No redirect or empty redirect, going to account")
-  console.log("⚠️ redirectParam value:", JSON.stringify(redirectParam))
-  console.log("⚠️ redirectParam type:", typeof redirectParam)
-  console.log("⚠️ redirectParam length:", redirectParam?.length)
-  
-  return NextResponse.redirect(new URL("/account", requestUrl.origin))
+
+  try {
+    // Create Supabase client
+    const supabase = createClient()
+    
+    // Exchange the code for a session
+    console.log("🔄 Exchanging code for session...")
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (error) {
+      console.log("❌ Error exchanging code for session:", error)
+      return NextResponse.redirect(new URL("/login?error=auth_failed", requestUrl.origin))
+    }
+    
+    if (!data.session) {
+      console.log("❌ No session created")
+      return NextResponse.redirect(new URL("/login?error=no_session", requestUrl.origin))
+    }
+    
+    console.log("✅ Session created successfully for user:", data.user?.email)
+    console.log("🔍 Session data:", {
+      access_token: data.session?.access_token ? "present" : "missing",
+      refresh_token: data.session?.refresh_token ? "present" : "missing",
+      expires_at: data.session?.expires_at,
+      user_id: data.user?.id
+    })
+    
+    // Small delay to ensure session is fully established
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    // Now redirect to the intended destination
+    if (redirectParam && redirectParam.trim() !== "") {
+      console.log("🎯 Redirecting to:", redirectParam)
+      
+      // Construct the full redirect URL
+      const redirectUrl = new URL(redirectParam, requestUrl.origin)
+      console.log("🔍 Full redirect URL:", redirectUrl.toString())
+      
+      // Perform the redirect
+      const response = NextResponse.redirect(redirectUrl)
+      console.log("🔍 Response status:", response.status)
+      
+      return response
+    }
+    
+    console.log("⚠️ No redirect parameter, going to account")
+    return NextResponse.redirect(new URL("/account", requestUrl.origin))
+    
+  } catch (error) {
+    console.log("❌ Unexpected error in auth callback:", error)
+    return NextResponse.redirect(new URL("/login?error=unexpected", requestUrl.origin))
+  }
 }
