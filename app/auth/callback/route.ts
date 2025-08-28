@@ -48,9 +48,30 @@ export async function GET(request: NextRequest) {
       const redirectUrl = new URL(redirectParam, requestUrl.origin)
       console.log("🔍 Full redirect URL:", redirectUrl.toString())
       
-      // Perform the redirect
+      // Ensure the session is properly set in the response
       const response = NextResponse.redirect(redirectUrl)
+      
+      // Set the session cookies in the response
+      if (data.session) {
+        response.cookies.set('sb-access-token', data.session.access_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          path: '/'
+        })
+        
+        response.cookies.set('sb-refresh-token', data.session.refresh_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          path: '/'
+        })
+      }
+      
       console.log("🔍 Response status:", response.status)
+      console.log("🔍 Response cookies:", response.cookies.getAll())
       
       return response
     }
