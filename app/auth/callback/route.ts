@@ -30,6 +30,19 @@ export async function GET(request: NextRequest) {
   console.log("📦 Incoming redirectParam:", redirectParam)
   console.log("🌐 Full request URL:", requestUrl.toString())
   console.log("🧭 All search params:", Array.from(requestUrl.searchParams.entries()))
+  console.log("🔍 State parameter:", state)
+  
+  if (state) {
+    try {
+      const stateData = JSON.parse(atob(state.split('.')[1]))
+      console.log("🔍 Parsed state data:", stateData)
+      if (stateData.referrer) {
+        console.log("🔍 Referrer from state:", stateData.referrer)
+      }
+    } catch (e) {
+      console.log("❌ Could not parse state parameter:", e)
+    }
+  }
 
   if (!code) {
     console.warn("⚠️ No code in URL, redirecting immediately to:", redirect)
@@ -123,7 +136,7 @@ export async function GET(request: NextRequest) {
 
   redirect = profile?.is_admin
     ? "/admin"
-    : (redirectParam || "/account")
+    : redirect || "/account"
 
   console.log("✅ Final redirect target:", redirect)
 
