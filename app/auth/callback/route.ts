@@ -11,6 +11,9 @@ export async function GET(request: NextRequest) {
   // Try to get redirect from query params first, then from state
   let redirectParam = requestUrl.searchParams.get("redirect")
   
+  console.log("🔍 Raw redirect parameter from URL:", redirectParam)
+  console.log("🔍 All search params:", Array.from(requestUrl.searchParams.entries()))
+  
   // If no redirect in query params, try to extract from state
   if (!redirectParam && state) {
     try {
