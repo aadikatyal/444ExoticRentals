@@ -16,6 +16,7 @@ export default function LocationsPage() {
       image: "/images/nobu.jpg?height=300&width=600",
       description:
         "Our flagship location in the heart of Miami Beach, featuring our full lineup of exotic and luxury vehicles.",
+      location: "Atlanta"
     },
     {
       id: 2,
@@ -26,6 +27,7 @@ export default function LocationsPage() {
       image: "/images/brickell.jpg?height=300&width=600",
       description:
         "Conveniently located in the Brickell financial district, offering easy access to our premium fleet.",
+      location: "Miami"
     }
   ]
 
@@ -63,7 +65,7 @@ export default function LocationsPage() {
                     <Button variant="outline" className="flex-1">
                       Get Directions
                     </Button>
-                    <Link href="/fleet" className="flex-1">
+                    <Link href={`/fleet?location=${location.location}`} className="flex-1">
                       <Button className="w-full bg-red-600 hover:bg-red-700 text-white">View Cars</Button>
                     </Link>
                   </div>
