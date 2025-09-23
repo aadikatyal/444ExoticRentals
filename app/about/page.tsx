@@ -32,12 +32,12 @@ export default function AboutPage() {
             <li className="mb-2">Immaculate maintenance and preparation of every vehicle</li>
             <li className="mb-2">Flexible rental periods from single days to extended experiences</li>
             <li className="mb-2">Convenient delivery and pickup options</li>
-            <li className="mb-2">Personalized service from our team of automotive enthusiasts</li>
+            <li className="mb-2">Personalized service from our team of automotive connoisseurs</li>
             <li className="mb-2">Transparent pricing with no hidden fees</li>
           </ul>
           <h2 className="text-2xl font-bold mt-8 mb-4">Our Team</h2>
           <p className="mb-4">
-            Our team consists of passionate car enthusiasts who are dedicated to providing exceptional service. From our
+            Our team consists of passionate car aficionados who are dedicated to providing exceptional service. From our
             knowledgeable customer service representatives to our meticulous maintenance staff, everyone at 444 Exotic
             Rentals shares a commitment to excellence.
           </p>
