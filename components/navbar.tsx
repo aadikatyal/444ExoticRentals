@@ -65,7 +65,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-700">
+        <nav className="hidden lg:flex items-center space-x-8 text-sm font-medium text-gray-700">
           {navLinks.map(({ href, label }) => (
             <Link
               key={href}
@@ -85,7 +85,7 @@ export function Navbar() {
           {!loading && (
             <>
               {user ? (
-                <div className="hidden md:flex items-center gap-4">
+                <div className="hidden lg:flex items-center gap-4">
                   <Link href="/account">
                     <Button variant="outline" size="sm" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
@@ -103,7 +103,7 @@ export function Navbar() {
                   </Button>
                 </div>
               ) : (
-                <Link href="/login" className="hidden md:block">
+                <Link href="/login" className="hidden lg:block">
                   <Button className="bg-red-600 hover:bg-red-700 text-white">Sign In</Button>
                 </Link>
               )}
@@ -113,7 +113,7 @@ export function Navbar() {
           {/* Mobile Nav */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden text-gray-700">
+              <Button variant="ghost" size="icon" className="lg:hidden text-gray-700">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle menu</span>
               </Button>

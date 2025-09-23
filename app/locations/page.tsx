@@ -12,7 +12,7 @@ export default function LocationsPage() {
       name: "Nobu Atlanta",
       address: "3520 Peachtree Rd NE, Atlanta, GA 30326",
       phone: "+1 (470) 886-6265",
-      hours: "Mon-Sat: 9AM-7PM, Sun: 10AM-5PM",
+      hours: "Mon-Sat: 9AM-7PM, Sun: By Appointment",
       image: "/images/nobu.jpg?height=300&width=600",
       description:
         "Our flagship location in the heart of Miami Beach, featuring our full lineup of exotic and luxury vehicles.",
@@ -22,7 +22,7 @@ export default function LocationsPage() {
       name: "Brickell First Apartments",
       address: "110 SW 12th St, Miami, FL 33130",
       phone: "+1 (470) 880-6265",
-      hours: "Mon-Sat: 9AM-7PM, Sun: 10AM-5PM",
+      hours: "Mon-Sat: 9AM-7PM, Sun: By Appointment",
       image: "/images/brickell.jpg?height=300&width=600",
       description:
         "Conveniently located in the Brickell financial district, offering easy access to our premium fleet.",
