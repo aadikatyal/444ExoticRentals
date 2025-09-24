@@ -3,9 +3,10 @@ import Stripe from "stripe"
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { v4 as uuidv4 } from "uuid"
+import { sendDepositConfirmation, sendAdminDepositNotification, type BookingEmailData, type AdminEmailData } from "@/lib/email"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2025-03-31.basil",
 })
 
 // Normalize and resolve the absolute origin for redirect URLs
@@ -84,6 +85,9 @@ export async function POST(req: Request) {
       console.error("❌ Failed to insert booking:", insertError)
       return NextResponse.json({ error: "Failed to create booking" }, { status: 500 })
     }
+
+    // ✅ Emails will be sent via Stripe webhook after payment completion
+    console.log("📧 Booking created, emails will be sent after payment completion")
 
     // ✅ Metadata for Stripe
     const metadata = {

@@ -44,14 +44,23 @@ export default function AdminBookingsPage() {
     if (!confirmAction) return
 
     setLoading(true)
-    const supabase = createClient()
-    const { error } = await supabase.from("bookings").update({ status }).eq("id", id)
+    
+    try {
+      const response = await fetch("/api/admin/approve-booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId: id, status }),
+      })
 
-    if (error) {
+      if (!response.ok) {
+        throw new Error("Failed to update booking status")
+      }
+
+      await fetchBookings()
+    } catch (error) {
       console.error("Update failed", error)
-    } else {
-      fetchBookings()
     }
+    
     setLoading(false)
   }
 

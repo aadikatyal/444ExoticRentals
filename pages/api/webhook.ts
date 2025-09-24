@@ -2,6 +2,7 @@ import { buffer } from 'micro'
 import Stripe from 'stripe'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
+import { sendDepositConfirmation, sendAdminDepositNotification, sendFinalConfirmation, sendAdminFinalConfirmation, type BookingEmailData, type AdminEmailData } from '../../lib/email'
 
 export const config = {
   api: {
@@ -12,7 +13,7 @@ export const config = {
 export const runtime = 'nodejs'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-08-01',
+  apiVersion: '2025-03-31.basil',
 })
 
 const supabase = createClient(
@@ -83,6 +84,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       console.log('✅ Booking confirmed:', booking_id)
+
+      // Send final confirmation emails
+      try {
+        // Get booking details with car and user info
+        const { data: bookingData } = await supabase
+          .from('bookings')
+          .select(`
+            *,
+            cars:cars(make, model, year),
+            profiles:profiles(full_name, email)
+          `)
+          .eq('id', booking_id)
+          .single()
+
+        if (bookingData && bookingData.cars && bookingData.profiles) {
+          const emailData: BookingEmailData = {
+            customerName: bookingData.profiles.full_name || 'Valued Customer',
+            customerEmail: bookingData.profiles.email || session.customer_email || '',
+            carMake: bookingData.cars.make,
+            carModel: bookingData.cars.model,
+            carYear: bookingData.cars.year,
+            startDate: bookingData.start_date,
+            endDate: bookingData.end_date,
+            startTime: bookingData.start_time,
+            endTime: bookingData.end_time,
+            location: bookingData.location,
+            totalPrice: bookingData.total_price,
+            depositAmount: bookingData.deposit_amount,
+            bookingType: bookingData.booking_type as 'rental' | 'photoshoot',
+            hours: bookingData.hours,
+            bookingId: booking_id,
+          }
+
+          // Send customer final confirmation
+          await sendFinalConfirmation(emailData)
+
+          // Send admin final confirmation
+          const adminEmailData: AdminEmailData = {
+            ...emailData,
+            adminEmail: process.env.ADMIN_EMAIL || 'aadikatyal21@gmail.com',
+          }
+          await sendAdminFinalConfirmation(adminEmailData)
+
+          console.log('✅ Final confirmation emails sent for booking:', booking_id)
+        }
+      } catch (emailError) {
+        console.error('❌ Failed to send final confirmation emails:', emailError)
+        // Don't fail the webhook if emails fail
+      }
+
       return res.status(200).json({ message: 'Booking confirmed' })
     }
 
@@ -125,6 +176,58 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       console.log('✅ Booking inserted:', booking_id)
+
+      // Send email confirmations
+      try {
+        // Get car and user details for email
+        const { data: carData } = await supabase
+          .from('cars')
+          .select('make, model, year')
+          .eq('id', car_id)
+          .single()
+
+        const { data: userData } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', user_id)
+          .single()
+
+        if (carData && userData) {
+          const emailData: BookingEmailData = {
+            customerName: userData.full_name || 'Valued Customer',
+            customerEmail: userData.email || session.customer_email || '',
+            carMake: carData.make,
+            carModel: carData.model,
+            carYear: carData.year,
+            startDate: start_date,
+            endDate: end_date,
+            startTime: start_time,
+            endTime: end_time,
+            location,
+            totalPrice: parseFloat(total_price || '0'),
+            depositAmount: parseFloat(deposit_amount || '0'),
+            bookingType: booking_type as 'rental' | 'photoshoot',
+            hours: hours ? parseInt(hours) : undefined,
+            bookingId: booking_id,
+          }
+
+          // Send customer confirmation
+          await sendDepositConfirmation(emailData)
+
+          // Send admin notification
+          const adminEmailData: AdminEmailData = {
+            ...emailData,
+            adminEmail: process.env.ADMIN_EMAIL || 'aadikatyal21@gmail.com',
+          }
+          await sendAdminDepositNotification(adminEmailData)
+
+          console.log('✅ Email confirmations sent for booking:', booking_id)
+        }
+      } catch (emailError) {
+        console.error('❌ Failed to send email confirmations:', emailError)
+        // Don't fail the webhook if emails fail
+      }
+
       return res.status(200).json({ message: 'Deposit booking created' })
     }
 
