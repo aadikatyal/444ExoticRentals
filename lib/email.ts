@@ -464,7 +464,7 @@ export async function sendDepositConfirmation(data: BookingEmailData) {
     const template = emailTemplates.depositConfirmation(data)
     
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'noreply@notifications.444exoticrentals.com',
       to: [data.customerEmail],
       subject: template.subject,
       html: template.html,
@@ -484,7 +484,7 @@ export async function sendAdminDepositNotification(data: AdminEmailData) {
     const template = emailTemplates.adminDepositNotification(data)
     
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'noreply@notifications.444exoticrentals.com',
       to: [data.adminEmail],
       subject: template.subject,
       html: template.html,
@@ -503,7 +503,7 @@ export async function sendBookingApproved(data: BookingEmailData) {
     const template = emailTemplates.bookingApproved(data)
     
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'noreply@notifications.444exoticrentals.com',
       to: [data.customerEmail],
       subject: template.subject,
       html: template.html,
@@ -522,7 +522,7 @@ export async function sendFinalConfirmation(data: BookingEmailData) {
     const template = emailTemplates.finalConfirmation(data)
     
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'noreply@notifications.444exoticrentals.com',
       to: [data.customerEmail],
       subject: template.subject,
       html: template.html,
@@ -541,7 +541,7 @@ export async function sendAdminFinalConfirmation(data: AdminEmailData) {
     const template = emailTemplates.adminFinalConfirmation(data)
     
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'noreply@notifications.444exoticrentals.com',
       to: [data.adminEmail],
       subject: template.subject,
       html: template.html,

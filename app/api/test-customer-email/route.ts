@@ -7,7 +7,7 @@ export async function GET() {
 
     const testEmailData: BookingEmailData = {
       customerName: "Test Customer",
-      customerEmail: "arkstudiomusic@gmail.com", // Use arkstudiomusic@gmail.com for testing
+      customerEmail: "arkstudiomusic@gmail.com", // Now we can send to any email!
       carMake: "Lamborghini",
       carModel: "Huracan",
       carYear: 2024,
