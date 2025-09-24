@@ -40,38 +40,61 @@ export default function AdminBookingsPage() {
   }, [])
 
   const updateStatus = async (id: string, status: "approved" | "rejected") => {
+    console.log("🔄 Updating booking status:", { id, status })
+    
     const confirmAction = window.confirm(`Are you sure you want to ${status} this booking?`)
     if (!confirmAction) return
 
     setLoading(true)
     
     try {
+      console.log("📤 Sending request to /api/admin/approve-booking")
       const response = await fetch("/api/admin/approve-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bookingId: id, status }),
       })
 
+      console.log("📥 Response status:", response.status)
+      
       if (!response.ok) {
-        throw new Error("Failed to update booking status")
+        const errorText = await response.text()
+        console.error("❌ API Error:", errorText)
+        throw new Error(`Failed to update booking status: ${errorText}`)
       }
 
+      console.log("✅ Status updated successfully, refreshing bookings")
       await fetchBookings()
     } catch (error) {
-      console.error("Update failed", error)
+      console.error("❌ Update failed:", error)
+      alert(`Failed to ${status} booking: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setLoading(false)
   }
 
   const filteredBookings =
-    filterStatus === "all" ? bookings : bookings.filter((b) => b.status === filterStatus)
+    filterStatus === "all" ? bookings : 
+    filterStatus === "pending" ? bookings.filter((b) => b.status === "pending" || b.status === "pending_approval") :
+    bookings.filter((b) => b.status === filterStatus)
 
   const statusColors: Record<string, string> = {
     pending: "#fbbf24",   // amber
+    pending_approval: "#fbbf24",   // amber
     approved: "#3b82f6",  // blue
     confirmed: "#22c55e", // green
     rejected: "#ef4444",  // red
+  }
+
+  const getStatusDisplay = (status: string) => {
+    const statusMap: Record<string, string> = {
+      pending: "Pending",
+      pending_approval: "Pending",
+      approved: "Approved", 
+      confirmed: "Confirmed",
+      rejected: "Rejected"
+    }
+    return statusMap[status] || status
   }
 
   return (
@@ -153,9 +176,9 @@ export default function AdminBookingsPage() {
                       <td className="px-4 py-2 capitalize">{b.booking_type}</td>
                       <td className="px-4 py-2">{b.hours ?? "-"}</td>
                       <td className="px-4 py-2">{b.location}</td>
-                      <td className="px-4 py-2 capitalize">{b.status}</td>
+                      <td className="px-4 py-2 capitalize">{getStatusDisplay(b.status)}</td>
                       <td className="px-4 py-2 space-x-2">
-                        {b.status === "pending" ? (
+                        {(b.status === "pending" || b.status === "pending_approval") ? (
                           <>
                             <Button
                               size="sm"
@@ -193,12 +216,12 @@ export default function AdminBookingsPage() {
                       <p className="text-xs text-gray-500 font-mono">{b.id}</p>
                     </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${
-                      b.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      (b.status === 'pending' || b.status === 'pending_approval') ? 'bg-yellow-100 text-yellow-800' :
                       b.status === 'approved' ? 'bg-blue-100 text-blue-800' :
                       b.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                       'bg-red-100 text-red-800'
                     }`}>
-                      {b.status}
+                      {getStatusDisplay(b.status)}
                     </span>
                   </div>
                   
@@ -238,7 +261,7 @@ export default function AdminBookingsPage() {
                     )}
                   </div>
 
-                  {b.status === "pending" && (
+                  {(b.status === "pending" || b.status === "pending_approval") && (
                     <div className="flex gap-2 pt-2 border-t">
                       <Button
                         size="sm"

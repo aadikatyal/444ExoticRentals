@@ -5,17 +5,21 @@ import { sendBookingApproved, type BookingEmailData } from "@/lib/email"
 
 export async function POST(req: NextRequest) {
   try {
+    console.log("🔔 Admin approve booking API called")
     const { bookingId, status } = await req.json()
+    console.log("📦 Request data:", { bookingId, status })
 
     if (!bookingId || !status) {
+      console.error("❌ Missing required fields")
       return NextResponse.json({ error: "Missing booking ID or status" }, { status: 400 })
     }
 
     if (status !== "approved" && status !== "rejected") {
+      console.error("❌ Invalid status:", status)
       return NextResponse.json({ error: "Invalid status" }, { status: 400 })
     }
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
     // Update booking status
