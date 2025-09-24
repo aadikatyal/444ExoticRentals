@@ -83,14 +83,26 @@ export async function POST(req: NextRequest) {
 
         const { data: userData } = await supabase
           .from('profiles')
-          .select('name, email')
+          .select('name, email, full_name')
           .eq('id', user_id)
           .single()
 
+        // Also try to get user from auth
+        const { data: authUser } = await supabase.auth.admin.getUserById(user_id)
+
+        console.log('📧 Car data:', carData)
+        console.log('📧 User data:', userData)
+        console.log('📧 Auth user data:', authUser?.user?.user_metadata)
+        console.log('📧 User ID being queried:', user_id)
+
         if (carData) {
           const emailData: BookingEmailData = {
-            customerName: userData?.name || 'Valued Customer',
-            customerEmail: userData?.email || '',
+            customerName: userData?.name || 
+                         userData?.full_name || 
+                         authUser?.user?.user_metadata?.full_name || 
+                         authUser?.user?.user_metadata?.name || 
+                         'Valued Customer',
+            customerEmail: userData?.email || authUser?.user?.email || '',
             carMake: carData.make,
             carModel: carData.model,
             carYear: 2024,
