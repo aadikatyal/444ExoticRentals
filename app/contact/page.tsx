@@ -124,7 +124,7 @@ export default function ContactPage() {
                     <h3 className="font-medium">Email Address</h3>
                     <p className="text-sm text-gray-600 mt-1">
                       <a href="mailto:adminmissing required error components, refreshing...@444ExoticRentals.com" className="hover:text-red-600">
-                        info@444ExoticRentals.com
+                        admin@444ExoticRentals.com
                       </a>
                     </p>
                   </div>

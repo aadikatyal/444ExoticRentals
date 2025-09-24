@@ -92,12 +92,12 @@ export const emailTemplates = {
           </div>
           
           <p style="color: #4b5563; margin-bottom: 20px;">
-            If you have any questions, please contact us at <a href="mailto:info@444exoticrentals.com" style="color: #dc2626;">info@444exoticrentals.com</a> or call (470) 880-6265.
+            If you have any questions, please contact us at <a href="mailto:admin@444exoticrentals.com" style="color: #dc2626;">admin@444exoticrentals.com</a> or call (470) 880-6265.
           </p>
         </div>
         
         <div style="background: #1f2937; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p style="margin: 0;">© 2024 444 Exotic Rentals. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 444 Exotic Rentals. All rights reserved.</p>
         </div>
       </div>
     `
@@ -194,7 +194,7 @@ export const emailTemplates = {
         </div>
         
         <div style="background: #1f2937; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p style="margin: 0;">© 2024 444 Exotic Rentals. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 444 Exotic Rentals. All rights reserved.</p>
         </div>
       </div>
     `
@@ -276,12 +276,12 @@ export const emailTemplates = {
           </div>
           
           <p style="color: #4b5563; margin-bottom: 20px;">
-            If you have any questions, please contact us at <a href="mailto:info@444exoticrentals.com" style="color: #dc2626;">info@444exoticrentals.com</a> or call (470) 880-6265.
+            If you have any questions, please contact us at <a href="mailto:admin@444exoticrentals.com" style="color: #dc2626;">admin@444exoticrentals.com</a> or call (470) 880-6265.
           </p>
         </div>
         
         <div style="background: #1f2937; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p style="margin: 0;">© 2024 444 Exotic Rentals. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 444 Exotic Rentals. All rights reserved.</p>
         </div>
       </div>
     `
@@ -357,12 +357,12 @@ export const emailTemplates = {
           
           <p style="color: #4b5563; margin-bottom: 20px;">
             If you have any questions or need to make changes to your booking, please contact us at 
-            <a href="mailto:info@444exoticrentals.com" style="color: #dc2626;">info@444exoticrentals.com</a> or call (470) 880-6265.
+            <a href="mailto:admin@444exoticrentals.com" style="color: #dc2626;">admin@444exoticrentals.com</a> or call (470) 880-6265.
           </p>
         </div>
         
         <div style="background: #1f2937; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p style="margin: 0;">© 2024 444 Exotic Rentals. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 444 Exotic Rentals. All rights reserved.</p>
         </div>
       </div>
     `
@@ -451,7 +451,7 @@ export const emailTemplates = {
         </div>
         
         <div style="background: #1f2937; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p style="margin: 0;">© 2024 444 Exotic Rentals. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 444 Exotic Rentals. All rights reserved.</p>
         </div>
       </div>
     `
