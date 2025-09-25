@@ -48,6 +48,7 @@ export default function AccountPage() {
         .from("bookings")
         .select("*, cars(*)")
         .eq("user_id", user.id)
+        .neq("status", "cancelled")
 
       setPendingBookings(bookings.filter((b) => b.status === "pending"))
       setApprovedBookings(bookings.filter((b) => b.status === "approved"))
@@ -147,7 +148,10 @@ export default function AccountPage() {
         if (!confirm) return
       
         const supabase = createClient()
-        const { error } = await supabase.from("bookings").delete().eq("id", bookingId)
+        const { error } = await supabase
+          .from("bookings")
+          .update({ status: "cancelled" })
+          .eq("id", bookingId)
       
         if (error) {
           console.error("Failed to cancel booking:", error.message)

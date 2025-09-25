@@ -26,6 +26,7 @@ export default function AdminBookingsPage() {
         cars:cars(*),
         profiles:profiles(*)
       `)
+      .neq("status", "cancelled")
       .order("created_at", { ascending: false })
 
     if (error) {

@@ -52,6 +52,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
           cars:car_id (*)
         `)
         .eq("user_id", user.id)
+        .neq("status", "cancelled")
         .order("created_at", { ascending: false })
 
       if (error) throw error

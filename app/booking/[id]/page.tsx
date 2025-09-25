@@ -40,6 +40,12 @@ export default function BookingConfirmationPage() {
           .single()
 
         if (bookingError || !bookingData) throw new Error("Booking not found")
+        
+        // Check if booking is cancelled
+        if (bookingData.status === "cancelled") {
+          throw new Error("This booking has been cancelled")
+        }
+        
         setBooking(bookingData)
 
         const { data: carData, error: carError } = await supabase
@@ -74,7 +80,14 @@ export default function BookingConfirmationPage() {
   }
 
   if (error || !booking || !car) {
-    const message = error?.includes("Booking") || !booking
+    const message = error?.includes("cancelled")
+      ? {
+          title: "Booking Cancelled",
+          description: "This booking has been cancelled and is no longer available.",
+          button: "Return Home",
+          action: () => router.push("/"),
+        }
+      : error?.includes("Booking") || !booking
       ? {
           title: "Booking Not Found",
           description: "We couldn't find your booking. It may have expired or been removed.",

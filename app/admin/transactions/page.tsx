@@ -14,6 +14,7 @@ export default function AdminTransactionsPage() {
       const { data, error } = await supabase
         .from("bookings")
         .select("id, total_price, created_at, status, profiles(id, email), cars(name)")
+        .neq("status", "cancelled")
         .order("created_at", { ascending: false })
 
       if (error) {
