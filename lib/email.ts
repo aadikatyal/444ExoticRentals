@@ -1,10 +1,7 @@
 import { Resend } from 'resend'
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error('RESEND_API_KEY environment variable is required')
-}
-
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Only initialize Resend if API key is available
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 export interface BookingEmailData {
   customerName: string
@@ -464,6 +461,11 @@ export const emailTemplates = {
 
 // Email sending functions
 export async function sendDepositConfirmation(data: BookingEmailData) {
+  if (!resend) {
+    console.warn('⚠️ Resend not configured - skipping email send')
+    return { success: false, error: 'Email service not configured' }
+  }
+
   try {
     const template = emailTemplates.depositConfirmation(data)
     
@@ -484,6 +486,11 @@ export async function sendDepositConfirmation(data: BookingEmailData) {
 }
 
 export async function sendAdminDepositNotification(data: AdminEmailData) {
+  if (!resend) {
+    console.warn('⚠️ Resend not configured - skipping email send')
+    return { success: false, error: 'Email service not configured' }
+  }
+
   try {
     const template = emailTemplates.adminDepositNotification(data)
     
@@ -503,6 +510,11 @@ export async function sendAdminDepositNotification(data: AdminEmailData) {
 }
 
 export async function sendBookingApproved(data: BookingEmailData) {
+  if (!resend) {
+    console.warn('⚠️ Resend not configured - skipping email send')
+    return { success: false, error: 'Email service not configured' }
+  }
+
   try {
     const template = emailTemplates.bookingApproved(data)
     

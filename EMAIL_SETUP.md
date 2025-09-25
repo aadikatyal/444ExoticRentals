@@ -6,7 +6,7 @@ Add these to your `.env.local` file:
 
 ```bash
 # Email Configuration
-RESEND_API_KEY=your_resend_api_key_here
+RESEND_API_KEY=reYg8k7zTa4ScxMUVSMz8BkUzXa6CZT9as
 ADMIN_EMAIL=admin@444exoticrentals.com
 
 # Or if using a different email service, update lib/email.ts accordingly
