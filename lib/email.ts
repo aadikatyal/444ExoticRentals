@@ -1,6 +1,10 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY || 're_Yg8k7zTa_4ScxMUVSMz8BkUzXa6CZT9as')
+if (!process.env.RESEND_API_KEY) {
+  throw new Error('RESEND_API_KEY environment variable is required')
+}
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export interface BookingEmailData {
   customerName: string

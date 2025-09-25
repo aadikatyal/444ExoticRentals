@@ -18,6 +18,7 @@ export default function AdminBookingsPage() {
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "approved" | "confirmed" | "rejected">("all")
 
   const fetchBookings = async () => {
+    setLoading(true)
     const supabase = createClient()
     const { data, error } = await supabase
       .from("bookings")
@@ -34,6 +35,7 @@ export default function AdminBookingsPage() {
     } else {
       setBookings(data || [])
     }
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -104,6 +106,15 @@ export default function AdminBookingsPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">All Bookings</h1>
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchBookings}
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              {loading ? "Refreshing..." : "Refresh"}
+            </Button>
             <Select value={filterStatus} onValueChange={(val: any) => setFilterStatus(val)}>
               <SelectTrigger className="w-full sm:w-[140px]">
                 <SelectValue />

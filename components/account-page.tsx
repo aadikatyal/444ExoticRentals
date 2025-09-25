@@ -167,6 +167,7 @@ export default function AccountPage() {
             .from("bookings")
             .select("*, cars(*)")
             .eq("user_id", user.id)
+            .neq("status", "cancelled")
       
           setPendingBookings(updatedBookings.filter((b) => b.status === "pending"))
           setApprovedBookings(updatedBookings.filter((b) => b.status === "approved"))
