@@ -158,6 +158,15 @@ export default function AccountPage() {
           alert("Failed to cancel booking. Please try again.")
         } else {
           alert("Booking canceled.")
+          
+          // Verify the cancellation worked
+          const { data: verifyBooking } = await supabase
+            .from("bookings")
+            .select("id, status")
+            .eq("id", bookingId)
+            .single()
+          
+          console.log("🔍 Verification - Booking status after cancellation:", verifyBooking)
       
           // 🧠 Re-fetch updated booking list
           const {
