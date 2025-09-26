@@ -14,6 +14,14 @@ export const metadata: Metadata = {
   description:
     "Rent exotic cars in Miami and Atlanta. Experience luxury with our premium fleet of supercars and luxury vehicles.",
   generator: "v0.dev",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 }
 
 export default function RootLayout({
@@ -22,7 +30,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" type="image/x-icon" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="manifest" href="/site.webmanifest" />
         <script
